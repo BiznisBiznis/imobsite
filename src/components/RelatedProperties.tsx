@@ -8,14 +8,21 @@ interface RelatedPropertiesProps {
   maxItems?: number;
 }
 
-const RelatedProperties = ({ currentPropertyId, maxItems = 3 }: RelatedPropertiesProps) => {
+const RelatedProperties = ({
+  currentPropertyId,
+  maxItems = 3,
+}: RelatedPropertiesProps) => {
   const navigate = useNavigate();
   // Fetch enough properties to have maxItems to show after filtering current one
-  const { data: propertiesResponse, isLoading, isError } = useProperties(1, maxItems + 2, {});
+  const {
+    data: propertiesResponse,
+    isLoading,
+    isError,
+  } = useProperties(1, maxItems + 2, {});
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-40">
+      <div className="flex justify-center items-center h-40 col-span-full">
         <LoaderCircle className="animate-spin text-red-600 w-8 h-8" />
       </div>
     );
@@ -47,9 +54,7 @@ const RelatedProperties = ({ currentPropertyId, maxItems = 3 }: RelatedPropertie
           />
         </div>
       ))}
-        ))}
-      </div>
-    </div>
+    </>
   );
 };
 
