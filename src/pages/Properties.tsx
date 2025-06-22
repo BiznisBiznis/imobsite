@@ -126,7 +126,7 @@ const Properties = () => {
     return (
       <>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
-          {properties.map((property: Property, index: number) => (
+          {displayProperties.map((property: Property, index: number) => (
             <PropertyCard
               key={property.id}
               {...property}
