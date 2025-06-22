@@ -13,17 +13,63 @@ const Properties = () => {
   const navigate = useNavigate();
   const [showFilters, setShowFilters] = useState(false);
 
-  const {
-    data,
-    isLoading,
-    isError,
-    error,
-    page,
-    setPage,
-    totalPages,
-  } = useProperties();
+  const { data, isLoading, isError, error, page, setPage, totalPages } =
+    useProperties();
 
   const properties = data?.data || [];
+
+  // Fallback data when API is not available
+  const fallbackProperties: Property[] = [
+    {
+      id: "1",
+      title: "Garsonieră ultracentral",
+      price: 61000,
+      location: "București",
+      area: 35,
+      rooms: 1,
+      type: "Apartament cu 1 camera de vânzare",
+      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      thumbnailUrl:
+        "https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=400",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      badges: ["Nou", "Redus"],
+    },
+    {
+      id: "2",
+      title: "Apartament 2 camere, modern",
+      price: 85000,
+      location: "Cluj-Napoca",
+      area: 55,
+      rooms: 2,
+      type: "Apartament cu 2 camere de vânzare",
+      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      thumbnailUrl:
+        "https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=400",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      badges: ["Exclusivitate"],
+    },
+    {
+      id: "3",
+      title: "Casă cu grădină",
+      price: 120000,
+      location: "Timișoara",
+      area: 120,
+      rooms: 4,
+      type: "Casă de vânzare",
+      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      thumbnailUrl:
+        "https://images.pexels.com/photos/164558/pexels-photo-164558.jpeg?auto=compress&cs=tinysrgb&w=400",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      badges: ["Gradină"],
+    },
+  ];
+
+  // Use fallback data when there's an error or no data
+  const displayProperties =
+    isError || properties.length === 0 ? fallbackProperties : properties;
 
   const handlePropertyClick = (propertyId: number) => {
     navigate(`/property/${propertyId}`);
@@ -54,19 +100,27 @@ const Properties = () => {
       return (
         <div className="flex flex-col justify-center items-center h-96 bg-red-50 text-red-700 rounded-lg p-6 col-span-full">
           <ServerCrash className="w-16 h-16 mb-4" />
-          <h3 className="text-xl font-semibold mb-2">Eroare la încărcarea proprietăților</h3>
-          <p className="text-center">Nu am putut prelua datele. Vă rugăm să încercați din nou mai târziu.</p>
-          <p className="text-sm mt-2 font-mono bg-red-100 p-2 rounded">{error?.message}</p>
+          <h3 className="text-xl font-semibold mb-2">
+            Eroare la încărcarea proprietăților
+          </h3>
+          <p className="text-center">
+            Nu am putut prelua datele. Vă rugăm să încercați din nou mai târziu.
+          </p>
+          <p className="text-sm mt-2 font-mono bg-red-100 p-2 rounded">
+            {error?.message}
+          </p>
         </div>
       );
     }
-    
+
     if (!data || data.data.length === 0) {
-        return (
-            <div className="text-center py-16 col-span-full">
-                <p className="text-slate-500">Momentan nu sunt proprietăți disponibile.</p>
-            </div>
-        );
+      return (
+        <div className="text-center py-16 col-span-full">
+          <p className="text-slate-500">
+            Momentan nu sunt proprietăți disponibile.
+          </p>
+        </div>
+      );
     }
 
     return (
@@ -83,25 +137,25 @@ const Properties = () => {
         </div>
 
         {totalPages > 1 && (
-            <div className="mt-10 flex justify-center items-center gap-3">
+          <div className="mt-10 flex justify-center items-center gap-3">
             <button
-                onClick={handlePrevPage}
-                disabled={page === 1}
-                className="bg-slate-700 hover:bg-slate-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 min-w-[70px] shadow-sm hover:shadow-md"
+              onClick={handlePrevPage}
+              disabled={page === 1}
+              className="bg-slate-700 hover:bg-slate-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 min-w-[70px] shadow-sm hover:shadow-md"
             >
-                ‹ Anterior
+              ‹ Anterior
             </button>
             <span className="text-slate-500 text-sm px-3 font-medium">
-                {page} / {totalPages}
+              {page} / {totalPages}
             </span>
             <button
-                onClick={handleNextPage}
-                disabled={page === totalPages}
-                className="bg-slate-700 hover:bg-slate-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 min-w-[70px] shadow-sm hover:shadow-md"
+              onClick={handleNextPage}
+              disabled={page === totalPages}
+              className="bg-slate-700 hover:bg-slate-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 min-w-[70px] shadow-sm hover:shadow-md"
             >
-                Următor ›
+              Următor ›
             </button>
-            </div>
+          </div>
         )}
       </>
     );
@@ -146,9 +200,7 @@ const Properties = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
             {/* Main Content - Properties Grid */}
-            <div className="lg:col-span-3">
-              {renderContent()}
-            </div>
+            <div className="lg:col-span-3">{renderContent()}</div>
 
             {/* Sidebar - Filters */}
             <div
