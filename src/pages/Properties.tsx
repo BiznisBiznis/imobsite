@@ -16,8 +16,6 @@ const Properties = () => {
   const { data, isLoading, isError, error, page, setPage, totalPages } =
     useProperties();
 
-  const properties = data?.data || [];
-
   // Fallback data when API is not available
   const fallbackProperties: Property[] = [
     {
@@ -67,9 +65,28 @@ const Properties = () => {
     },
   ];
 
-  // Use fallback data when there's an error or no data
+  // Safely extract properties array from API response
+  let properties: Property[] = [];
+
+  try {
+    // Handle different possible API response structures
+    if (data?.data?.data && Array.isArray(data.data.data)) {
+      properties = data.data.data;
+    } else if (data?.data && Array.isArray(data.data)) {
+      properties = data.data;
+    } else if (Array.isArray(data)) {
+      properties = data;
+    }
+  } catch (error) {
+    console.warn("Error parsing properties data:", error);
+    properties = [];
+  }
+
+  // Ensure displayProperties is always an array
   const displayProperties =
-    isError || properties.length === 0 ? fallbackProperties : properties;
+    !properties || properties.length === 0 || isError
+      ? fallbackProperties
+      : properties;
 
   const handlePropertyClick = (propertyId: number) => {
     navigate(`/property/${propertyId}`);
