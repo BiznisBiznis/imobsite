@@ -40,7 +40,7 @@ const Properties = () => {
   })();
 
   const handlePropertyClick = (propertyId: string) => {
-    navigate(`/property/${propertyId}`);
+    navigate(`/proprietate/${propertyId}`);
   };
 
   const handleNextPage = () => {
