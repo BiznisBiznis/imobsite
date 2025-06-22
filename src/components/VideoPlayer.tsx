@@ -24,7 +24,10 @@ const VideoPlayer = ({
       if (isPlaying) {
         videoRef.current.pause();
       } else {
-        videoRef.current.play();
+        // Autoplay când se dă click
+        videoRef.current.play().catch((error) => {
+          console.log("Autoplay prevented by browser:", error);
+        });
       }
       setIsPlaying(!isPlaying);
     }
