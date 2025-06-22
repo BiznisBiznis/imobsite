@@ -8,17 +8,10 @@ interface RelatedPropertiesProps {
   maxItems?: number;
 }
 
-const RelatedProperties = ({
-  currentPropertyId,
-  maxItems = 3,
-}: RelatedPropertiesProps) => {
+const RelatedProperties = ({ currentPropertyId, maxItems = 3 }: RelatedPropertiesProps) => {
   const navigate = useNavigate();
   // Fetch enough properties to have maxItems to show after filtering current one
-  const {
-    data: propertiesResponse,
-    isLoading,
-    isError,
-  } = useProperties(1, maxItems + 2, {});
+  const { data: propertiesResponse, isLoading, isError } = useProperties(1, maxItems + 2, {});
 
   if (isLoading) {
     return (
@@ -34,26 +27,26 @@ const RelatedProperties = ({
 
   const relatedProperties = propertiesResponse.data.data
     .filter((p) => p.id !== currentPropertyId)
-    .slice(0, 3);
+    .slice(0, maxItems);
 
   if (relatedProperties.length === 0) {
     return null;
   }
 
   return (
-    <div className="mb-8">
-      <h2 className="text-2xl font-bold text-slate-800 mb-6">
-        Te-ar putea interesa și
-      </h2>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {relatedProperties.map((property, index) => (
+    <>
+      {relatedProperties.map((property, index) => (
+        <div
+          key={property.id}
+          className="transform transition-all duration-300 hover:scale-[1.02]"
+        >
           <PropertyCard
-            key={property.id}
             {...property}
             index={index}
             onClick={() => navigate(`/proprietate/${property.id}`)}
           />
+        </div>
+      ))}
         ))}
       </div>
     </div>
