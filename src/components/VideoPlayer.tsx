@@ -23,7 +23,8 @@ const VideoPlayer = ({
   const [showControls, setShowControls] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const togglePlay = () => {
+  const togglePlay = (e?: React.MouseEvent) => {
+    e?.stopPropagation(); // Previne propagarea către alte click handlers
     if (videoRef.current) {
       if (isPlaying) {
         videoRef.current.pause();
