@@ -6,7 +6,7 @@ import { useState } from "react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import RelatedProperties from "@/components/RelatedProperties";
-import BackToProperties from "@/components/BackToProperties";
+import { COMPANY_CONFIG } from "@/config/app";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -20,14 +20,15 @@ import {
   LoaderCircle,
   AlertTriangle,
   ChevronLeft,
-  ChevronRight,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 const PropertyDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: propertyData, isLoading, isError } = useProperty(id || "");
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
   if (isLoading) {
     return (
@@ -39,7 +40,7 @@ const PropertyDetail = () => {
 
   if (isError || !propertyData?.success) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-white">
         <Navigation />
         <div className="flex flex-col justify-center items-center h-screen text-center px-4">
           <AlertTriangle className="w-16 h-16 text-red-600 mb-4" />
@@ -64,256 +65,257 @@ const PropertyDetail = () => {
   const property = propertyData.data;
   const embedUrl = getYouTubeEmbedUrl(property.videoUrl || "");
 
-  // Prepare media items (video + images)
-  const mediaItems = [];
-
-  if (embedUrl) {
-    mediaItems.push({
-      type: "video",
-      content: embedUrl,
-      thumbnail: property.thumbnailUrl,
-    });
-  }
-
-  // Add placeholder images if no real images
-  if (!property.images || property.images.length === 0) {
-    for (let i = 1; i <= 3; i++) {
-      mediaItems.push({
-        type: "image",
-        content: `https://images.pexels.com/photos/${106399 + i}/pexels-photo-${106399 + i}.jpeg?auto=compress&cs=tinysrgb&w=800`,
-        thumbnail: `https://images.pexels.com/photos/${106399 + i}/pexels-photo-${106399 + i}.jpeg?auto=compress&cs=tinysrgb&w=400`,
-      });
-    }
-  } else {
-    property.images.forEach((image) => {
-      mediaItems.push({
-        type: "image",
-        content: image.url,
-        thumbnail: image.url,
-      });
-    });
-  }
-
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % mediaItems.length);
-  };
-
-  const prevImage = () => {
-    setCurrentImageIndex(
-      (prev) => (prev - 1 + mediaItems.length) % mediaItems.length,
-    );
-  };
-
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("ro-RO").format(price);
   };
 
-  const currentMedia = mediaItems[currentImageIndex];
+  // Mock description for now
+  const fullDescription = `Va propun spre inchiriere un apartament de 2 camere pe Strada Tuzla la intersectie cu Strada Polyvaci foarte aproape de Bulevardul Lacul Tei, cu acces facil catre Barbu Vacarescu si Pipera. Ca puncte de interes enumerand: Scoala Generala 323, Gradinita cu Program Prelungit Nr. 49, Parcul Circului, Sala Palatul, Piața Obor, Mega Mall, Baneasa Shopping City, Promenada Mall, parcuri si multe altele.`;
+
+  const shortDescription = fullDescription.substring(0, 150) + "...";
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-white">
       <Navigation />
 
-      {/* Main Content */}
-      <div className="pt-16 min-h-screen">
-        <div className="grid grid-cols-1 lg:grid-cols-3 h-screen">
-          {/* Left Column - Media Gallery */}
-          <div className="lg:col-span-2 relative bg-black">
-            {currentMedia && (
-              <>
-                {currentMedia.type === "video" ? (
-                  <iframe
-                    src={currentMedia.content}
-                    className="w-full h-full"
-                    title="Property Video"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                ) : (
-                  <img
-                    src={currentMedia.content}
-                    alt={property.title}
-                    className="w-full h-full object-cover"
-                  />
-                )}
+      {/* Back Button */}
+      <div className="bg-slate-900 text-white py-3">
+        <div className="max-w-6xl mx-auto px-4">
+          <button
+            onClick={() => navigate("/proprietati")}
+            className="flex items-center gap-2 text-white hover:text-red-400 transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <span className="text-sm">Înapoi la Proprietăți</span>
+          </button>
+        </div>
+      </div>
 
-                {/* Navigation Controls */}
-                {mediaItems.length > 1 && (
-                  <>
-                    <button
-                      onClick={prevImage}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all"
-                    >
-                      <ChevronLeft className="w-6 h-6" />
-                    </button>
-                    <button
-                      onClick={nextImage}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all"
-                    >
-                      <ChevronRight className="w-6 h-6" />
-                    </button>
+      <div className="pt-8 pb-16">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Main Content - Left Column */}
+            <div className="lg:col-span-2">
+              {/* Property Title */}
+              <div className="mb-6">
+                <div className="flex flex-wrap gap-2 mb-3">
+                  <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium">
+                    Oferte imobiliare București
+                  </span>
+                  <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
+                    {property.type}
+                  </span>
+                  <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
+                    {property.location}
+                  </span>
+                </div>
 
-                    {/* Image Counter */}
-                    <div className="absolute bottom-4 left-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm">
-                      {currentImageIndex + 1} / {mediaItems.length}
-                    </div>
+                <h1 className="text-3xl lg:text-4xl font-bold text-slate-800 mb-3 leading-tight tracking-tight">
+                  {property.title}
+                </h1>
 
-                    {/* Media Type Indicator */}
-                    <div className="absolute bottom-4 right-4 flex gap-2">
-                      {currentMedia.type === "video" && (
-                        <div className="bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold">
-                          Video
-                        </div>
-                      )}
-                      {currentMedia.type === "image" && (
-                        <div className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-semibold">
-                          Hartă
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* Right Column - Property Info & Agent */}
-          <div className="bg-slate-900 text-white p-6 overflow-y-auto">
-            {/* Property Title & Basic Info */}
-            <div className="mb-6">
-              <h1 className="text-2xl font-bold text-white mb-2 leading-tight tracking-tight">
-                {property.title}
-              </h1>
-
-              {/* Location */}
-              <div className="flex items-center gap-2 text-slate-300 mb-4">
-                <MapPin className="w-4 h-4" />
-                <span className="text-sm">{property.location}</span>
+                {/* Special Offer */}
+                <div className="bg-red-600 text-white px-4 py-2 rounded-lg inline-block mb-4">
+                  <span className="font-semibold">
+                    COMISION 0% pentru Chiriași!
+                  </span>
+                </div>
               </div>
 
-              {/* Price */}
-              <div className="text-3xl font-bold text-white mb-4 tracking-tight">
-                € {formatPrice(property.price)}
+              {/* Video Section */}
+              {embedUrl && (
+                <div className="mb-6">
+                  <div className="relative bg-black rounded-lg overflow-hidden aspect-video">
+                    <iframe
+                      src={embedUrl}
+                      className="w-full h-full"
+                      title="Property Video"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Property Description */}
+              <div className="mb-8">
+                <p className="text-slate-700 leading-relaxed mb-4">
+                  {showFullDescription ? fullDescription : shortDescription}
+                </p>
+
+                <button
+                  onClick={() => setShowFullDescription(!showFullDescription)}
+                  className="flex items-center gap-2 text-red-600 hover:text-red-700 font-medium text-sm transition-colors"
+                >
+                  {showFullDescription ? (
+                    <>
+                      <ChevronUp className="w-4 h-4" />
+                      Citește mai puțin
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-4 h-4" />
+                      Citește mai mult
+                    </>
+                  )}
+                </button>
               </div>
 
               {/* Property Details */}
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="flex items-center gap-2 text-slate-300">
-                  <Ruler className="w-4 h-4" />
-                  <span className="text-sm">{property.area} mp</span>
+              <div className="bg-slate-50 rounded-lg p-6 mb-8">
+                {/* Price */}
+                <div className="text-3xl font-bold text-slate-800 mb-6 tracking-tight">
+                  € {formatPrice(property.price)}
                 </div>
-                {property.rooms && (
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <Bed className="w-4 h-4" />
-                    <span className="text-sm">{property.rooms} camere</span>
+
+                {/* Details Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  <div className="text-center">
+                    <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-2">
+                      <Ruler className="w-6 h-6 text-red-600" />
+                    </div>
+                    <div className="text-sm text-slate-600">Suprafață</div>
+                    <div className="font-semibold text-slate-800">
+                      {property.area} mp
+                    </div>
                   </div>
-                )}
-                <div className="flex items-center gap-2 text-slate-300">
-                  <Building className="w-4 h-4" />
-                  <span className="text-sm">{property.type}</span>
-                </div>
-              </div>
 
-              {/* Badges */}
-              {property.badges && property.badges.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {property.badges.map((badge, index) => (
-                    <Badge
-                      key={index}
-                      className="bg-red-600 text-white text-xs px-2 py-1 rounded"
-                    >
-                      {badge}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
+                  {property.rooms && (
+                    <div className="text-center">
+                      <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mx-auto mb-2">
+                        <Bed className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <div className="text-sm text-slate-600">Camere</div>
+                      <div className="font-semibold text-slate-800">
+                        {property.rooms}
+                      </div>
+                    </div>
+                  )}
 
-            {/* Agent Section */}
-            <div className="border-t border-slate-700 pt-6">
-              <h3 className="text-lg font-semibold text-white mb-4">
-                Agent imobiliar
-              </h3>
-
-              <div className="bg-slate-800 rounded-lg p-4 mb-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                    AB
+                  <div className="text-center">
+                    <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mx-auto mb-2">
+                      <Building className="w-6 h-6 text-green-600" />
+                    </div>
+                    <div className="text-sm text-slate-600">Tip</div>
+                    <div className="font-semibold text-slate-800 text-xs">
+                      {property.type}
+                    </div>
                   </div>
-                  <div>
-                    <div className="font-semibold text-white">Andrei Bicer</div>
-                    <div className="text-sm text-slate-400">
-                      Agent imobiliar
+
+                  <div className="text-center">
+                    <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-full mx-auto mb-2">
+                      <MapPin className="w-6 h-6 text-purple-600" />
+                    </div>
+                    <div className="text-sm text-slate-600">Locație</div>
+                    <div className="font-semibold text-slate-800 text-xs">
+                      {property.location}
                     </div>
                   </div>
                 </div>
 
-                {/* Contact Buttons */}
-                <div className="space-y-2">
-                  <a
-                    href="tel:+40725502342"
-                    className="flex items-center justify-center gap-2 w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded transition-all duration-300"
-                  >
-                    <Phone className="w-4 h-4" />
-                    +40 725 502 342
-                  </a>
-
-                  <a
-                    href="https://wa.me/40725502342"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded transition-all duration-300"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    WhatsApp
-                  </a>
-                </div>
+                {/* Badges */}
+                {property.badges && property.badges.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {property.badges.map((badge, index) => (
+                      <Badge
+                        key={index}
+                        className="bg-red-600 text-white text-xs px-3 py-1 rounded-full"
+                      >
+                        {badge}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </div>
+            </div>
 
-              {/* Privacy Notice */}
-              <div className="text-xs text-slate-400 bg-slate-800 p-3 rounded">
-                <p className="mb-2">
-                  Sunt de acord cu{" "}
-                  <a
-                    href="/politica-confidentialitate"
-                    className="text-red-400 underline"
-                  >
-                    politica de confidențialitate
-                  </a>
-                </p>
-                <p>
-                  Prin contactarea agentului, accepți să fii contactat prin
-                  telefon, email sau WhatsApp pentru această proprietate.
-                </p>
+            {/* Sidebar - Agent */}
+            <div className="lg:col-span-1">
+              <div className="bg-slate-900 text-white rounded-xl p-6 sticky top-24">
+                <h3 className="text-lg font-semibold text-white mb-4">
+                  Agent imobiliar
+                </h3>
+
+                <div className="mb-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-14 h-14 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                      {COMPANY_CONFIG.name
+                        .split(" ")
+                        .map((word) => word[0])
+                        .join("")}
+                    </div>
+                    <div>
+                      <div className="font-semibold text-white">
+                        {COMPANY_CONFIG.name}
+                      </div>
+                      <div className="text-sm text-slate-400">
+                        {COMPANY_CONFIG.tagline}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Contact Number Display */}
+                  <div className="text-2xl font-bold text-white mb-1">
+                    {COMPANY_CONFIG.contact.phone}
+                  </div>
+                  <div className="text-sm text-slate-400 mb-6">
+                    Solicită chiar acum o vizionare
+                  </div>
+
+                  {/* Contact Buttons */}
+                  <div className="space-y-3">
+                    <a
+                      href={`tel:${COMPANY_CONFIG.contact.phone}`}
+                      className="flex items-center justify-center gap-2 w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300"
+                    >
+                      <Phone className="w-4 h-4" />
+                      Telefon
+                    </a>
+
+                    <a
+                      href={`https://wa.me/${COMPANY_CONFIG.contact.whatsapp.replace(/[^0-9]/g, "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      WhatsApp
+                    </a>
+                  </div>
+                </div>
+
+                {/* Privacy Notice */}
+                <div className="text-xs text-slate-400 bg-slate-800 p-3 rounded border-t border-slate-700">
+                  <p className="mb-2">
+                    Sunt de acord cu{" "}
+                    <a
+                      href="/politica-confidentialitate"
+                      className="text-red-400 underline"
+                    >
+                      politica de confidențialitate
+                    </a>
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Related Properties Section - Bottom of page */}
+      {/* Related Properties Section - 4 smaller videos */}
       <div className="bg-slate-50 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Back to Properties Button */}
           <div className="text-center mb-12">
-            <button
-              onClick={() => navigate("/proprietati")}
-              className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl tracking-wide uppercase"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              Întoarce-te la Proprietăți
-            </button>
-          </div>
-
-          {/* Related Properties */}
-          <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-slate-800 mb-4 tracking-tight">
               Te-ar putea interesa și
             </h2>
             <div className="w-24 h-1 bg-red-600 mx-auto"></div>
           </div>
 
-          <RelatedProperties currentPropertyId={property.id} />
+          {/* 4 smaller property cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <RelatedProperties currentPropertyId={property.id} maxItems={4} />
+          </div>
         </div>
       </div>
 
