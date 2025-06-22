@@ -35,19 +35,26 @@ const PropertyCard = ({
   onClick,
 }: PropertyCardProps) => {
   return (
-    <div className="bg-white border-2 border-red-600 rounded-xl shadow-xl property-card-hover luxury-shadow group overflow-hidden w-full h-[500px] flex flex-col property-card">
+    <div
+      className="bg-white border-2 border-red-600 rounded-xl shadow-xl property-card-hover luxury-shadow group overflow-hidden w-full h-[500px] flex flex-col property-card cursor-pointer"
+      onClick={onClick}
+    >
       {/* Video Player - Top Section */}
       <div className="relative rounded-t-xl overflow-hidden">
         <VideoPlayer
           videoUrl={videoUrl}
           thumbnailUrl={thumbnailUrl}
-          className="w-full h-[380px] cursor-pointer"
+          className="w-full h-[380px]"
           aspectRatio="mobile"
+          onClick={(e) => {
+            e.stopPropagation();
+            // Video își gestionează propriul play/pause
+          }}
         />
 
         {/* Badges Overlay - Only show if badges exist */}
         {badges.length > 0 && (
-          <div className="absolute top-3 left-3 flex flex-wrap gap-1">
+          <div className="absolute top-3 left-3 flex flex-wrap gap-1 pointer-events-none">
             {badges.map((badge, badgeIndex) => (
               <Badge
                 key={badgeIndex}
