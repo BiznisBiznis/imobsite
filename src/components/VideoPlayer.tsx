@@ -50,10 +50,17 @@ const VideoPlayer = ({
 
   return (
     <div
-      className={`relative bg-black rounded-lg overflow-hidden group ${aspectRatioClass} ${className} ${onClick ? "cursor-pointer" : ""}`}
+      className={`relative bg-black rounded-lg overflow-hidden group ${aspectRatioClass} ${className}`}
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => setShowControls(false)}
-      onClick={onClick}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (onClick) {
+          onClick(e);
+        } else {
+          togglePlay(e);
+        }
+      }}
     >
       <video
         ref={videoRef}
