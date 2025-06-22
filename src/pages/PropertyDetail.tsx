@@ -93,9 +93,8 @@ const PropertyDetail = () => {
 
       <div className="pt-8 pb-16">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Content - Left Column */}
-            <div className="lg:col-span-2">
+          {/* Main Content - Single Column */}
+          <div className="max-w-4xl mx-auto">
               {/* Property Title */}
               <div className="mb-6">
                 <h1 className="text-3xl lg:text-4xl font-bold text-slate-800 mb-4 leading-tight tracking-tight">
