@@ -212,8 +212,8 @@ const PropertyDetail = () => {
 
             {/* Sidebar - Agent */}
             <div className="lg:col-span-1">
-              <div className="bg-slate-900 text-white rounded-xl p-6 sticky top-24">
-                <h3 className="text-lg font-semibold text-white mb-4">
+              <div className="bg-white border-2 border-red-200 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-slate-800 mb-4">
                   Agent imobiliar
                 </h3>
 
@@ -226,20 +226,20 @@ const PropertyDetail = () => {
                         .join("")}
                     </div>
                     <div>
-                      <div className="font-semibold text-white">
+                      <div className="font-semibold text-slate-800">
                         {COMPANY_CONFIG.name}
                       </div>
-                      <div className="text-sm text-slate-400">
+                      <div className="text-sm text-slate-600">
                         {COMPANY_CONFIG.tagline}
                       </div>
                     </div>
                   </div>
 
                   {/* Contact Number Display */}
-                  <div className="text-2xl font-bold text-white mb-1">
+                  <div className="text-2xl font-bold text-slate-800 mb-1">
                     {COMPANY_CONFIG.contact.phone}
                   </div>
-                  <div className="text-sm text-slate-400 mb-6">
+                  <div className="text-sm text-slate-600 mb-6">
                     Solicită chiar acum o vizionare
                   </div>
 
@@ -263,19 +263,6 @@ const PropertyDetail = () => {
                       WhatsApp
                     </a>
                   </div>
-                </div>
-
-                {/* Privacy Notice */}
-                <div className="text-xs text-slate-400 bg-slate-800 p-3 rounded border-t border-slate-700">
-                  <p className="mb-2">
-                    Sunt de acord cu{" "}
-                    <a
-                      href="/politica-confidentialitate"
-                      className="text-red-400 underline"
-                    >
-                      politica de confidențialitate
-                    </a>
-                  </p>
                 </div>
               </div>
             </div>
