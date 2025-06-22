@@ -1,12 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  propertyService,
-  teamService,
-  analyticsService,
-} from "@/services/api";
+import { propertyService, teamService, analyticsService } from "@/services/api";
+import type { Property } from "@/types/api";
 import type {
-  Property,
   PropertyFormData,
   TeamMember,
   TeamMemberFormData,
@@ -30,7 +26,7 @@ export const queryKeys = {
 export const useProperties = (
   initialPage = 1,
   limit = 9,
-  filters: Record<string, any> = {}
+  filters: Record<string, any> = {},
 ) => {
   const [page, setPage] = useState(initialPage);
   const filterKey = JSON.stringify(filters); // Stable key for query
