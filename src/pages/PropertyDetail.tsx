@@ -270,6 +270,33 @@ const PropertyDetail = () => {
         </div>
       </div>
 
+      {/* CTA Section before Related Properties */}
+      <div className="bg-slate-900 py-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold text-white mb-4 tracking-tight">
+            Găsește-ți casa perfectă
+          </h2>
+          <p className="text-slate-300 text-lg mb-8 max-w-2xl mx-auto">
+            Descoperă proprietăți excepționale cu ajutorul experților noștri.
+            Suntem alături de tine în fiecare pas al procesului.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={() => navigate("/proprietati")}
+              className="bg-red-600 hover:bg-red-700 text-white font-semibold px-8 py-3 rounded-lg transition-all duration-300 transform hover:scale-105"
+            >
+              Vezi toate proprietățile
+            </button>
+            <a
+              href={`tel:${COMPANY_CONFIG.contact.phone}`}
+              className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-slate-900 font-semibold px-8 py-3 rounded-lg transition-all duration-300"
+            >
+              Contactează-ne
+            </a>
+          </div>
+        </div>
+      </div>
+
       {/* Related Properties Section - 4 smaller videos */}
       <div className="bg-slate-50 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
