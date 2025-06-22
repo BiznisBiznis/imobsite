@@ -70,17 +70,22 @@ const PropertyCarousel = ({ properties }: PropertyCarouselProps) => {
                 <div className="bg-white border-2 border-red-600 rounded-xl shadow-xl overflow-hidden h-full">
                   {/* Video Section - Portrait Format */}
                   <div className="relative">
+                    <VideoPlayer
+                      videoUrl={property.videoUrl}
+                      thumbnailUrl={property.thumbnailUrl}
+                      className="w-full h-[480px] object-cover rounded-t-xl"
+                      aspectRatio="standard"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Video își gestionează propriul play/pause
+                      }}
+                    />
+                    {/* Overlay pentru click pe proprietate (doar pe marginile video-ului) */}
                     <div
+                      className="absolute inset-0 cursor-pointer hover:bg-black/10 transition-colors"
                       onClick={() => handlePropertyClick(property.id)}
-                      className="cursor-pointer"
-                    >
-                      <VideoPlayer
-                        videoUrl={property.videoUrl}
-                        thumbnailUrl={property.thumbnailUrl}
-                        className="w-full h-[480px] object-cover rounded-t-xl"
-                        aspectRatio="standard"
-                      />
-                    </div>
+                      style={{ pointerEvents: "none" }}
+                    />
                   </div>
 
                   {/* Property Information */}
