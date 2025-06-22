@@ -20,20 +20,17 @@ const Contact = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Map Section */}
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-red-100">
-              <div className="h-[400px] bg-gray-200 relative">
-                {/* Placeholder for Google Maps */}
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2848.8949032154613!2d26.097320315449924!3d44.43731997910206!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40b1ff3c5b817e9d%3A0x20531b69b8c1bdcf!2sBulevardul%20Carol%20I%2062%2C%20Bucure%C8%99ti%2C%20Romania!5e0!3m2!1sen!2s!4v1644494850945!5m2!1sen!2s"
-                  width="100%"
-                  height="400"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  className="w-full h-full"
-                ></iframe>
-              </div>
+            <div className="h-[400px] rounded-2xl overflow-hidden shadow-lg">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2742.123456789!2d26.766642989378298!3d46.24855786048749!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDbCsDE0JzU0LjgiTiAyNsKwNDUnNTkuOSJF!5e0!3m2!1sen!2sro!4v1234567890123!5m2!1sen!2sro"
+                width="100%"
+                height="400"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="w-full h-full rounded-2xl"
+              ></iframe>
             </div>
 
             {/* Contact Info Section */}
