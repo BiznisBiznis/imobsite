@@ -5,16 +5,20 @@ import { LoaderCircle } from "lucide-react";
 
 interface RelatedPropertiesProps {
   currentPropertyId: string;
+  maxItems?: number;
 }
 
-const RelatedProperties = ({ currentPropertyId }: RelatedPropertiesProps) => {
+const RelatedProperties = ({
+  currentPropertyId,
+  maxItems = 3,
+}: RelatedPropertiesProps) => {
   const navigate = useNavigate();
-  // Fetch 6 properties to have enough to show after filtering current one
+  // Fetch enough properties to have maxItems to show after filtering current one
   const {
     data: propertiesResponse,
     isLoading,
     isError,
-  } = useProperties(1, 6, {});
+  } = useProperties(1, maxItems + 2, {});
 
   if (isLoading) {
     return (
