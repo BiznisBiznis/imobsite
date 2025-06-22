@@ -88,16 +88,7 @@ const Properties = () => {
       ? fallbackProperties
       : properties;
 
-  // Debug logging
-  console.log("Properties Debug:", {
-    data,
-    properties,
-    displayProperties,
-    isError,
-    isLoading,
-    displayPropertiesIsArray: Array.isArray(displayProperties),
-    displayPropertiesLength: displayProperties?.length,
-  });
+  // Properties ready for display
 
   const handlePropertyClick = (propertyId: string | number) => {
     navigate(`/proprietate/${propertyId}`);
