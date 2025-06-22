@@ -20,6 +20,54 @@ const Index = () => {
         setProperties(response.data.data);
       } catch (error) {
         console.error("Failed to fetch properties:", error);
+        // Set fallback properties when API fails
+        setProperties([
+          {
+            id: "1",
+            title: "Garsonieră ultracentral",
+            price: 61000,
+            location: "București",
+            area: 35,
+            rooms: 1,
+            type: "Apartament cu 1 camera de vânzare",
+            videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            thumbnailUrl:
+              "https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=400",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            badges: ["Nou", "Redus"],
+          },
+          {
+            id: "2",
+            title: "Apartament 2 camere, modern",
+            price: 85000,
+            location: "Cluj-Napoca",
+            area: 55,
+            rooms: 2,
+            type: "Apartament cu 2 camere de vânzare",
+            videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            thumbnailUrl:
+              "https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=400",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            badges: ["Exclusivitate"],
+          },
+          {
+            id: "3",
+            title: "Casă cu grădină",
+            price: 120000,
+            location: "Timișoara",
+            area: 120,
+            rooms: 4,
+            type: "Casă de vânzare",
+            videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            thumbnailUrl:
+              "https://images.pexels.com/photos/164558/pexels-photo-164558.jpeg?auto=compress&cs=tinysrgb&w=400",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            badges: ["Gradină"],
+          },
+        ]);
       }
     };
 
