@@ -83,7 +83,7 @@ const VideoPlayer = ({
         className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${showControls || !isPlaying ? "opacity-100" : "opacity-0"}`}
       >
         <button
-          onClick={togglePlay}
+          onClick={(e) => togglePlay(e)}
           className="bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200"
         >
           {isPlaying ? (
