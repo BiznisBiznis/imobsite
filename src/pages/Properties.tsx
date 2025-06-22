@@ -246,26 +246,11 @@ const Properties = () => {
       <div className="pt-20 sm:pt-24 pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Page Header */}
-          <div className="mb-12 sm:mb-16 text-center">
-            <div className="relative">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-800 mb-6 tracking-tight">
-                Proprietăți Premium
-              </h1>
-              <div className="absolute -top-2 -left-2 w-8 h-8 bg-red-100 rounded-full opacity-60"></div>
-              <div className="absolute -top-1 -right-4 w-6 h-6 bg-red-200 rounded-full opacity-40"></div>
-            </div>
-            <p className="text-slate-600 text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed mb-6">
-              Descoperă cele mai selecte proprietăți din portofoliul nostru
-              exclusiv
-            </p>
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <div className="w-12 h-1 bg-red-600 rounded-full"></div>
-              <div className="w-3 h-3 bg-red-600 rounded-full"></div>
-              <div className="w-12 h-1 bg-red-600 rounded-full"></div>
-            </div>
-            <p className="text-sm text-slate-500 font-medium">
-              {displayProperties.length} proprietăți disponibile
-            </p>
+          <div className="mb-12 text-center">
+            <h1 className="text-3xl sm:text-4xl font-bold text-slate-800 mb-4 tracking-tight">
+              Oferte imobiliare Casa Vis
+            </h1>
+            <div className="w-24 h-1 bg-red-600 mx-auto"></div>
           </div>
 
           {/* Mobile Filter Toggle Button */}
