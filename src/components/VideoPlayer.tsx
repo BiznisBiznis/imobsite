@@ -49,9 +49,10 @@ const VideoPlayer = ({
 
   return (
     <div
-      className={`relative bg-black rounded-lg overflow-hidden group ${aspectRatioClass} ${className}`}
+      className={`relative bg-black rounded-lg overflow-hidden group ${aspectRatioClass} ${className} ${onClick ? "cursor-pointer" : ""}`}
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => setShowControls(false)}
+      onClick={onClick}
     >
       <video
         ref={videoRef}
@@ -60,6 +61,7 @@ const VideoPlayer = ({
         muted={isMuted}
         loop
         playsInline
+        autoPlay={autoplay}
         preload="metadata"
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
