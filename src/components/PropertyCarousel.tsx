@@ -67,7 +67,7 @@ const PropertyCarousel = ({ properties }: PropertyCarouselProps) => {
           <div className="hidden lg:grid lg:grid-cols-4 gap-6 pt-8">
             {properties.map((property) => (
               <div key={property.id}>
-                <div className="bg-white border-2 border-slate-900 shadow-xl overflow-hidden h-full">
+                <div className="bg-white border-2 border-red-600 rounded-xl shadow-xl overflow-hidden h-full">
                   {/* Video Section - Portrait Format */}
                   <div className="relative">
                     <div
@@ -77,15 +77,15 @@ const PropertyCarousel = ({ properties }: PropertyCarouselProps) => {
                       <VideoPlayer
                         videoUrl={property.videoUrl}
                         thumbnailUrl={property.thumbnailUrl}
-                        className="w-full h-[480px] object-cover"
+                        className="w-full h-[480px] object-cover rounded-t-xl"
                         aspectRatio="standard"
                       />
                     </div>
                   </div>
 
                   {/* Property Information */}
-                  <div className="p-2 text-center">
-                    <div className="text-xl font-bold text-slate-900 mb-1 tracking-tight">
+                  <div className="p-3 text-center">
+                    <div className="text-xl font-bold text-slate-900 mb-2 tracking-tight">
                       {property.price.toLocaleString()} €
                     </div>
                     <h3 className="text-sm font-medium text-slate-700 mb-3 leading-relaxed tracking-wide">
@@ -94,7 +94,7 @@ const PropertyCarousel = ({ properties }: PropertyCarouselProps) => {
 
                     <button
                       onClick={() => handlePropertyClick(property.id)}
-                      className="inline-flex items-center justify-center px-4 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 tracking-wide uppercase border border-red-500/20 min-w-[100px]"
+                      className="inline-flex items-center justify-center px-4 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 tracking-wide uppercase border border-red-500/20 min-w-[100px]"
                     >
                       Vezi Detalii
                     </button>
