@@ -153,48 +153,95 @@ const Properties = () => {
 
     return (
       <>
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
+        {/* Properties Grid with Better Spacing */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 xl:gap-8">
           {Array.isArray(displayProperties) ? (
             displayProperties.map((property: Property, index: number) => (
-              <PropertyCard
+              <div
                 key={property.id}
-                {...property}
-                index={index}
-                onClick={() => handlePropertyClick(property.id)}
-              />
+                className="transform transition-all duration-300 hover:scale-[1.02] hover:z-10"
+              >
+                <PropertyCard
+                  {...property}
+                  index={index}
+                  onClick={() => handlePropertyClick(property.id)}
+                />
+              </div>
             ))
           ) : (
             <div className="text-center py-16 col-span-full">
-              <p className="text-red-500">
-                Eroare la încărcarea proprietăților. Datele nu sunt în formatul
-                așteptat.
-              </p>
-              <p className="text-sm text-gray-500 mt-2">
-                displayProperties type: {typeof displayProperties}
-              </p>
+              <div className="bg-white rounded-xl border border-red-200 p-8 shadow-lg max-w-md mx-auto">
+                <p className="text-red-600 font-medium mb-2">
+                  Eroare la încărcarea proprietăților
+                </p>
+                <p className="text-sm text-gray-500">
+                  Datele nu sunt în formatul așteptat.
+                </p>
+                <p className="text-xs text-gray-400 mt-2">
+                  Type: {typeof displayProperties}
+                </p>
+              </div>
             </div>
           )}
         </div>
 
+        {/* Enhanced Pagination */}
         {totalPages > 1 && (
-          <div className="mt-10 flex justify-center items-center gap-3">
-            <button
-              onClick={handlePrevPage}
-              disabled={page === 1}
-              className="bg-slate-700 hover:bg-slate-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 min-w-[70px] shadow-sm hover:shadow-md"
-            >
-              ‹ Anterior
-            </button>
-            <span className="text-slate-500 text-sm px-3 font-medium">
-              {page} / {totalPages}
-            </span>
-            <button
-              onClick={handleNextPage}
-              disabled={page === totalPages}
-              className="bg-slate-700 hover:bg-slate-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 min-w-[70px] shadow-sm hover:shadow-md"
-            >
-              Următor ›
-            </button>
+          <div className="mt-12 flex flex-col items-center space-y-4">
+            {/* Page Info */}
+            <div className="text-center">
+              <p className="text-sm text-slate-600">
+                Afișez pagina{" "}
+                <span className="font-semibold text-slate-800">{page}</span> din{" "}
+                <span className="font-semibold text-slate-800">
+                  {totalPages}
+                </span>
+              </p>
+            </div>
+
+            {/* Navigation Buttons */}
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handlePrevPage}
+                disabled={page === 1}
+                className="group bg-white border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white disabled:bg-gray-100 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 min-w-[120px] shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100"
+              >
+                <span className="flex items-center gap-2">
+                  <span>‹</span>
+                  Anterior
+                </span>
+              </button>
+
+              <div className="flex items-center gap-2">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  const pageNum = i + 1;
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setPage(pageNum)}
+                      className={`w-10 h-10 rounded-full text-sm font-semibold transition-all duration-300 ${
+                        page === pageNum
+                          ? "bg-red-600 text-white shadow-lg"
+                          : "bg-white text-red-600 border border-red-200 hover:bg-red-50 hover:border-red-300"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                onClick={handleNextPage}
+                disabled={page === totalPages}
+                className="group bg-white border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white disabled:bg-gray-100 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 min-w-[120px] shadow-md hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100"
+              >
+                <span className="flex items-center gap-2">
+                  Următor
+                  <span>›</span>
+                </span>
+              </button>
+            </div>
           </div>
         )}
       </>
