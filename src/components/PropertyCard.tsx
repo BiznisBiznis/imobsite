@@ -35,9 +35,9 @@ const PropertyCard = ({
   onClick,
 }: PropertyCardProps) => {
   return (
-    <div className="bg-white border-2 border-slate-900 shadow-xl property-card-hover luxury-shadow group overflow-hidden w-full h-[500px] flex flex-col property-card">
+    <div className="bg-white border-2 border-red-600 rounded-xl shadow-xl property-card-hover luxury-shadow group overflow-hidden w-full h-[500px] flex flex-col property-card">
       {/* Video Player - Top Section */}
-      <div className="relative overflow-hidden">
+      <div className="relative rounded-t-xl overflow-hidden">
         <VideoPlayer
           videoUrl={videoUrl}
           thumbnailUrl={thumbnailUrl}
@@ -52,7 +52,7 @@ const PropertyCard = ({
               <Badge
                 key={badgeIndex}
                 variant="secondary"
-                className="bg-red-600/95 text-white text-xs font-medium backdrop-blur-sm px-2 py-1"
+                className="bg-red-600/95 text-white text-xs font-medium backdrop-blur-sm px-2 py-1 rounded"
               >
                 {badge}
               </Badge>
@@ -62,7 +62,7 @@ const PropertyCard = ({
       </div>
 
       {/* Property Information - Improved Typography */}
-      <div className="px-3 pt-2 pb-2 text-slate-900 flex flex-col h-[120px] justify-between text-center">
+      <div className="px-4 pt-3 pb-3 text-slate-900 flex flex-col h-[120px] justify-between text-center">
         {/* Price - Large at top with elegant metallic font */}
         <div className="text-lg font-bold text-slate-900 mb-1 tracking-tight">
           {currency}
