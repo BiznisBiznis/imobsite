@@ -5,13 +5,16 @@ import { LoaderCircle } from "lucide-react";
 
 interface RelatedPropertiesProps {
   currentPropertyId: string;
-  city: string;
 }
 
-const RelatedProperties = ({ currentPropertyId, city }: RelatedPropertiesProps) => {
+const RelatedProperties = ({ currentPropertyId }: RelatedPropertiesProps) => {
   const navigate = useNavigate();
-  // Fetch 4 properties from the same city to have 3 to show after filtering
-  const { data: propertiesResponse, isLoading, isError } = useProperties(1, 4, { city });
+  // Fetch 6 properties to have enough to show after filtering current one
+  const {
+    data: propertiesResponse,
+    isLoading,
+    isError,
+  } = useProperties(1, 6, {});
 
   if (isLoading) {
     return (
