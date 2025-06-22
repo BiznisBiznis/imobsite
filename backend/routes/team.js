@@ -17,7 +17,22 @@ try {
 // GET /api/team
 router.get("/", async (req, res) => {
   try {
-    const [team] = await db.query("SELECT * FROM team_members");
+    if (useDatabase && db) {
+      try {
+        const [team] = await db.query("SELECT * FROM team_members");
+        res.json({ success: true, data: { data: team, total: team.length } });
+        return;
+      } catch (dbError) {
+        console.warn(
+          "Database query failed, falling back to mock data:",
+          dbError.message,
+        );
+        useDatabase = false;
+      }
+    }
+
+    // Use mock data
+    const team = mockData.team;
     res.json({ success: true, data: { data: team, total: team.length } });
   } catch (error) {
     console.error(error);
