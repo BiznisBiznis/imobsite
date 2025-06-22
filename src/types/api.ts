@@ -1,5 +1,21 @@
 // TypeScript types for API responses
-import { Property } from '@/types/models';
+
+// Simplified Property type for API responses (frontend)
+export interface Property {
+  id: string;
+  title: string;
+  price: number;
+  currency?: string;
+  location: string;
+  area: number;
+  rooms?: number;
+  type: string;
+  videoUrl?: string;
+  thumbnailUrl?: string;
+  badges?: string[];
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -14,7 +30,6 @@ export interface PaginatedData<T> {
   limit: number;
   totalPages: number;
 }
-
 
 export interface PaginatedProperties {
   properties: Property[];
@@ -33,7 +48,8 @@ export interface TeamMember {
   updatedAt: string;
 }
 
-export interface CreateTeamMemberData extends Omit<TeamMember, 'id' | 'createdAt' | 'updatedAt'> {}
+export interface CreateTeamMemberData
+  extends Omit<TeamMember, "id" | "createdAt" | "updatedAt"> {}
 
 export interface AnalyticsStats {
   totalVisitors: number;
