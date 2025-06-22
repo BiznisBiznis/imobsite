@@ -16,10 +16,13 @@ const VideoPlayer = ({
 }: VideoPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
-  const [showControls, setShowControls] = useState(false);
+  const [showControls, setShowControls] = useState(true);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const togglePlay = () => {
+  const togglePlay = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     if (videoRef.current) {
       if (isPlaying) {
         videoRef.current.pause();
@@ -30,11 +33,30 @@ const VideoPlayer = ({
     }
   };
 
-  const toggleMute = () => {
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (videoRef.current) {
       videoRef.current.muted = !isMuted;
       setIsMuted(!isMuted);
     }
+  };
+
+  const handleLoadedMetadata = () => {
+    if (videoRef.current) {
+      setDuration(videoRef.current.duration);
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    if (videoRef.current) {
+      setCurrentTime(videoRef.current.currentTime);
+    }
+  };
+
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
   const aspectRatioClass =
@@ -56,6 +78,9 @@ const VideoPlayer = ({
         preload="metadata"
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
+        onLoadedMetadata={handleLoadedMetadata}
+        onTimeUpdate={handleTimeUpdate}
+        onClick={togglePlay}
       >
         <source src={videoUrl} type="video/mp4" />
         Your browser does not support the video tag.
@@ -96,7 +121,7 @@ const VideoPlayer = ({
       {/* Video Duration/Progress Indicator */}
       <div className="absolute bottom-2 left-2">
         <div className="bg-black/50 text-white text-xs px-2 py-1 rounded">
-          1:24
+          {formatTime(isPlaying ? currentTime : duration)}
         </div>
       </div>
     </div>

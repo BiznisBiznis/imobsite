@@ -34,14 +34,25 @@ const PropertyCard = ({
   index,
   onClick,
 }: PropertyCardProps) => {
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Only navigate if the click wasn't on the video player
+    const target = e.target as HTMLElement;
+    if (!target.closest('.video-player')) {
+      onClick?.();
+    }
+  };
+
   return (
-    <div className="bg-slate-700 rounded-lg shadow-sm property-card-hover luxury-shadow group overflow-hidden w-full h-[500px] flex flex-col property-card">
+    <div 
+      className="bg-slate-700 rounded-lg shadow-sm property-card-hover luxury-shadow group overflow-hidden w-full h-[500px] flex flex-col property-card cursor-pointer"
+      onClick={handleCardClick}
+    >
       {/* Video Player - Top Section */}
-      <div className="relative rounded-t-lg overflow-hidden">
+      <div className="relative rounded-t-lg overflow-hidden video-player">
         <VideoPlayer
           videoUrl={videoUrl}
           thumbnailUrl={thumbnailUrl}
-          className="w-full h-[320px] cursor-pointer"
+          className="w-full h-[320px]"
           aspectRatio="mobile"
         />
 
@@ -69,30 +80,43 @@ const PropertyCard = ({
           {price.toLocaleString()}
         </div>
 
+        {/* Property Details */}
+        <div className="flex justify-between items-center text-xs text-gray-400 mb-2">
+          <div className="flex items-center">
+            <MapPin className="h-3 w-3 mr-1 text-red-500" />
+            {location}
+          </div>
+          <div>
+            {area} m² {rooms ? `• ${rooms} cam` : ''}
+          </div>
+        </div>
+
         {/* Title/Description - Better font and spacing */}
         <h3
-          className="text-xs text-gray-400 overflow-hidden flex-shrink-0 leading-relaxed mb-3 font-primary"
+          className="text-sm text-gray-300 overflow-hidden flex-shrink-0 leading-relaxed mb-3 font-medium"
           style={{
             display: "-webkit-box",
             WebkitLineClamp: 2,
             WebkitBoxOrient: "vertical",
-            maxHeight: "2rem",
-            fontWeight: "500",
+            maxHeight: "2.5rem",
           }}
         >
           {title}
         </h3>
 
         {/* Premium Details Button - Expensive Design */}
-        <div className="flex justify-center">
+        <div className="flex justify-between items-center mt-auto">
+          <div className="text-xs text-gray-400">
+            {type}
+          </div>
           <button
-            className="inline-flex items-center justify-center px-6 py-2 text-xs font-bold text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-md transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 font-primary tracking-wide uppercase border border-red-500/20 min-w-[100px]"
+            className="inline-flex items-center justify-center px-4 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded transition-colors duration-200"
             onClick={(e) => {
               e.stopPropagation();
               onClick?.();
             }}
           >
-            Vezi Detalii
+            Detalii
           </button>
         </div>
       </div>

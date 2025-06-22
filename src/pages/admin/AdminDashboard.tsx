@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import {
   Card,
   CardContent,
@@ -7,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Building,
   Users,
@@ -15,16 +17,57 @@ import {
   Plus,
   BarChart3,
   Settings,
+  AlertCircle,
 } from "lucide-react";
+import { propertyService } from "@/services/api";
+import { useAnalyticsStats } from "@/hooks/useApi";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
 
-  // Mock statistics - in a real app, this would come from an API
+  // Fetch properties data
+  const { data: propertiesData, isLoading: isLoadingProperties } = useQuery({
+    queryKey: ['dashboard-properties'],
+    queryFn: () => propertyService.getAll(1, 1000), // Get all properties
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // For now, we'll use a fixed team member count since we don't have a team endpoint
+  // In a real app, you would fetch this from your API
+  const teamMemberCount = 0; // Default value
+  const isLoadingTeam = false; // No loading state for now
+
+  // Fetch analytics data
+  const { data: analyticsData, isLoading: isLoadingAnalytics } = useAnalyticsStats('1d');
+  
+  // Get today's visitors from analytics or default to 0
+  const todayVisitors = analyticsData?.data?.uniqueVisitors || 0;
+
+  // Calculate total property value
+  const totalValue = propertiesData?.data?.data?.reduce((sum: number, property: any) => {
+    return sum + (parseFloat(property.price) || 0);
+  }, 0) || 0;
+
+  // Format number with thousands separator
+  const formatNumber = (num: number) => {
+    return new Intl.NumberFormat('ro-RO').format(num);
+  };
+
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('ro-RO', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  // Stats data based on API responses
   const stats = [
     {
       title: "Total Proprietăți",
-      value: "6",
+      value: isLoadingProperties ? '...' : formatNumber(propertiesData?.data.total || 0),
       description: "Proprietăți active în portofoliu",
       icon: Building,
       color: "text-blue-600",
@@ -32,7 +75,7 @@ const AdminDashboard = () => {
     },
     {
       title: "Membri Echipă",
-      value: "6",
+      value: formatNumber(teamMemberCount),
       description: "Agenți imobiliari activi",
       icon: Users,
       color: "text-green-600",
@@ -40,7 +83,7 @@ const AdminDashboard = () => {
     },
     {
       title: "Valoare Totală",
-      value: "€1.8M",
+      value: isLoadingProperties ? '...' : formatCurrency(totalValue),
       description: "Valoarea totală a proprietăților",
       icon: TrendingUp,
       color: "text-purple-600",
@@ -48,8 +91,8 @@ const AdminDashboard = () => {
     },
     {
       title: "Vizitatori Astăzi",
-      value: "127",
-      description: "Vizitatori unici pe site",
+value: isLoadingAnalytics ? '...' : formatNumber(todayVisitors),
+      description: "Vizitatori unici astăzi",
       icon: Eye,
       color: "text-orange-600",
       bgColor: "bg-orange-50",

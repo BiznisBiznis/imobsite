@@ -7,7 +7,8 @@ import PropertyFilters from "../components/PropertyFilters";
 import WhatsAppButton from "../components/WhatsAppButton";
 import Footer from "../components/Footer";
 import { useProperties } from "../hooks/useApi";
-import { Property } from "../types/api";
+import type { Property } from "@/types/models";
+import type { PaginatedData } from "@/types/api";
 
 const Properties = () => {
   const navigate = useNavigate();
@@ -21,11 +22,24 @@ const Properties = () => {
     page,
     setPage,
     totalPages,
-  } = useProperties();
+  } = useProperties(1, 9);
 
-  const properties = data?.data || [];
+  // Extract properties from the response
+  const properties = (() => {
+    if (!data) return [];
+    // Handle both direct array response and paginated response
+    if (Array.isArray(data)) {
+      return data;
+    } else if (data?.data && Array.isArray(data.data)) {
+      return data.data;
+    } else if (typeof data === 'object' && 'data' in data && Array.isArray((data as any).data?.data)) {
+      return (data as any).data.data;
+    }
+    console.warn('Unexpected data format:', data);
+    return [];
+  })();
 
-  const handlePropertyClick = (propertyId: number) => {
+  const handlePropertyClick = (propertyId: string) => {
     navigate(`/property/${propertyId}`);
   };
 
@@ -61,7 +75,7 @@ const Properties = () => {
       );
     }
     
-    if (!data || data.data.length === 0) {
+    if (properties.length === 0) {
         return (
             <div className="text-center py-16 col-span-full">
                 <p className="text-slate-500">Momentan nu sunt proprietăți disponibile.</p>

@@ -16,7 +16,7 @@ import type {
 } from '@/types/models';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001',
 });
 
 api.interceptors.request.use(
@@ -46,8 +46,8 @@ api.interceptors.response.use(
 const responseBody = <T>(response: AxiosResponse<T>) => response.data;
 
 export const authService = {
-  login: (data: LoginRequest) => api.post<AuthResponse>('/auth/login', data).then(responseBody),
-  validateToken: () => api.get<{ valid: boolean }>('/auth/validate').then(responseBody),
+  login: (data: LoginRequest) => api.post<AuthResponse>('/api/auth/login', data).then(responseBody),
+  validateToken: () => api.get<{ valid: boolean }>('/api/auth/validate').then(responseBody),
 };
 
 export const propertyService = {
@@ -65,28 +65,28 @@ export const propertyService = {
         params.append(key, value.toString());
       }
     });
-    return api.get<ApiResponse<PaginatedData<Property>>>(`/properties?${params.toString()}`).then(responseBody);
+    return api.get<ApiResponse<PaginatedData<Property>>>(`/api/properties?${params.toString()}`).then(responseBody);
   },
-  getById: (id: string) => api.get<ApiResponse<Property>>(`/properties/${id}`).then(responseBody),
-  create: (data: PropertyFormData) => api.post<ApiResponse<Property>>('/properties', data).then(responseBody),
-  update: (id: string, data: Partial<PropertyFormData>) => api.put<ApiResponse<Property>>(`/properties/${id}`, data).then(responseBody),
-  delete: (id: string) => api.delete<ApiResponse<void>>(`/properties/${id}`).then(responseBody),
+  getById: (id: string) => api.get<ApiResponse<Property>>(`/api/properties/${id}`).then(responseBody),
+  create: (data: PropertyFormData) => api.post<ApiResponse<Property>>('/api/properties', data).then(responseBody),
+  update: (id: string, data: Partial<PropertyFormData>) => api.put<ApiResponse<Property>>(`/api/properties/${id}`, data).then(responseBody),
+  delete: (id: string) => api.delete<ApiResponse<void>>(`/api/properties/${id}`).then(responseBody),
 };
 
 export const teamService = {
-  getAll: () => api.get<ApiResponse<{ data: TeamMember[], total: number }>>('/team').then(responseBody),
-  getById: (id: string) => api.get<ApiResponse<TeamMember>>(`/team/${id}`).then(responseBody),
-  create: (data: TeamMemberFormData) => api.post<ApiResponse<TeamMember>>('/team', data).then(responseBody),
-  update: (id: string, data: Partial<TeamMemberFormData>) => api.put<ApiResponse<TeamMember>>(`/team/${id}`, data).then(responseBody),
-  delete: (id: string) => api.delete<ApiResponse<void>>(`/team/${id}`).then(responseBody),
+  getAll: () => api.get<ApiResponse<{ data: TeamMember[], total: number }>>('/api/team').then(responseBody),
+  getById: (id: string) => api.get<ApiResponse<TeamMember>>(`/api/team/${id}`).then(responseBody),
+  create: (data: TeamMemberFormData) => api.post<ApiResponse<TeamMember>>('/api/team', data).then(responseBody),
+  update: (id: string, data: Partial<TeamMemberFormData>) => api.put<ApiResponse<TeamMember>>(`/api/team/${id}`, data).then(responseBody),
+  delete: (id: string) => api.delete<ApiResponse<void>>(`/api/team/${id}`).then(responseBody),
 };
 
 export const analyticsService = {
-  getStats: (period = '7d') => api.get<ApiResponse<AnalyticsStats>>(`/analytics/stats?period=${period}`).then(responseBody),
-  getVisitorLogs: (page = 1, limit = 50) => api.get<ApiResponse<PaginatedData<VisitorLog>>>(`/analytics/logs?page=${page}&limit=${limit}`).then(responseBody),
-  getDailyStats: (days = 7) => api.get<ApiResponse<any[]>>(`/analytics/daily?days=${days}`).then(responseBody),
-  getPageStats: () => api.get<ApiResponse<any[]>>('/analytics/pages').then(responseBody),
-  trackVisit: (data: Partial<VisitorLog>) => api.post<ApiResponse<void>>('/analytics/track', data).then(responseBody),
+  getStats: (period = '7d') => api.get<ApiResponse<AnalyticsStats>>(`/api/analytics/stats?period=${period}`).then(responseBody),
+  getVisitorLogs: (page = 1, limit = 50) => api.get<ApiResponse<PaginatedData<VisitorLog>>>(`/api/analytics/logs?page=${page}&limit=${limit}`).then(responseBody),
+  getDailyStats: (days = 7) => api.get<ApiResponse<any[]>>(`/api/analytics/daily?days=${days}`).then(responseBody),
+  getPageStats: () => api.get<ApiResponse<any[]>>('/api/analytics/pages').then(responseBody),
+  trackVisit: (data: Partial<VisitorLog>) => api.post<ApiResponse<void>>('/api/analytics/track', data).then(responseBody),
 };
 
 export default api;

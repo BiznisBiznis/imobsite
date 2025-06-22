@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useProperty } from "@/hooks/useApi";
-import { getYouTubeEmbedUrl } from "@/lib/utils";
+import { YouTubePlayer } from "@/components/YouTubePlayer";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -60,23 +60,28 @@ const PropertyDetail = () => {
   }
 
   const property = propertyData.data;
-  const embedUrl = getYouTubeEmbedUrl(property.videoUrl || "");
-
   const mediaItems = [];
 
-  if (embedUrl) {
+  if (property.videoUrl) {
+    const focusPoint = property.videoFocusPoint 
+      ? JSON.parse(property.videoFocusPoint) 
+      : { x: 0.5, y: 0.5 };
+
     mediaItems.push({
       type: "youtube",
       content: (
-        <AspectRatio ratio={16 / 9} key="video">
-          <iframe
-            className="w-full h-full rounded-lg"
-            src={embedUrl}
-            title="YouTube video player"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          ></iframe>
-        </AspectRatio>
+        <div key="video" className="w-full">
+          <YouTubePlayer 
+            url={property.videoUrl}
+            width="100%"
+            height="100%"
+            autoplay={false}
+            controls={true}
+            focusPoint={focusPoint}
+            objectFit="cover"
+            className="rounded-lg"
+          />
+        </div>
       ),
     });
   }
@@ -120,7 +125,11 @@ const PropertyDetail = () => {
               <Carousel className="w-full">
                 <CarouselContent>
                   {mediaItems.map((item, index) => (
-                    <CarouselItem key={index}>{item.content}</CarouselItem>
+                    <CarouselItem key={index} className="flex justify-center">
+                      <div className="w-full max-w-4xl mx-auto">
+                        {item.content}
+                      </div>
+                    </CarouselItem>
                   ))}
                 </CarouselContent>
                 {mediaItems.length > 1 && (

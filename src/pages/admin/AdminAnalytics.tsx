@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Card,
   CardContent,
@@ -16,6 +17,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -41,118 +43,126 @@ import {
   Calendar,
   Download,
   RefreshCw,
+  AlertCircle,
+  Globe,
 } from "lucide-react";
+import { analyticsService } from "@/services/api";
+import { format } from "date-fns";
+import { ro } from "date-fns/locale";
 
-// Mock analytics data
-const mockVisitorLogs = [
-  {
-    id: 1,
-    ip: "192.168.1.45",
-    location: "București, România",
-    device: "Desktop",
-    browser: "Chrome 120",
-    page: "/proprietati",
-    timestamp: "2024-01-15 14:30:25",
-    duration: "2:45",
-    referrer: "Google Search",
-  },
-  {
-    id: 2,
-    ip: "10.0.0.123",
-    location: "Cluj-Napoca, România",
-    device: "Mobile",
-    browser: "Safari 17",
-    page: "/",
-    timestamp: "2024-01-15 14:28:12",
-    duration: "1:23",
-    referrer: "Direct",
-  },
-  {
-    id: 3,
-    ip: "172.16.0.89",
-    location: "Timișoara, România",
-    device: "Tablet",
-    browser: "Firefox 121",
-    page: "/echipa",
-    timestamp: "2024-01-15 14:25:45",
-    duration: "3:12",
-    referrer: "Facebook",
-  },
-  {
-    id: 4,
-    ip: "203.45.123.78",
-    location: "Constanța, România",
-    device: "Desktop",
-    browser: "Edge 120",
-    page: "/proprietate/1",
-    timestamp: "2024-01-15 14:22:33",
-    duration: "4:56",
-    referrer: "Google Ads",
-  },
-  {
-    id: 5,
-    ip: "192.168.0.201",
-    location: "Iași, România",
-    device: "Mobile",
-    browser: "Chrome 120",
-    page: "/contact",
-    timestamp: "2024-01-15 14:18:09",
-    duration: "1:55",
-    referrer: "Instagram",
-  },
-];
+// Format date for display
+const formatDate = (dateString: string) => {
+  try {
+    const date = new Date(dateString);
+    return format(date, 'PPpp', { locale: ro });
+  } catch (error) {
+    return dateString; // Return original string if date parsing fails
+  }
+};
 
-const mockDailyStats = [
-  { date: "2024-01-09", visitors: 45, pageViews: 123, newUsers: 23 },
-  { date: "2024-01-10", visitors: 52, pageViews: 145, newUsers: 28 },
-  { date: "2024-01-11", visitors: 48, pageViews: 132, newUsers: 22 },
-  { date: "2024-01-12", visitors: 61, pageViews: 167, newUsers: 34 },
-  { date: "2024-01-13", visitors: 58, pageViews: 159, newUsers: 31 },
-  { date: "2024-01-14", visitors: 67, pageViews: 189, newUsers: 38 },
-  { date: "2024-01-15", visitors: 73, pageViews: 201, newUsers: 42 },
-];
-
-const mockPageStats = [
-  { page: "/", views: 1245, uniqueViews: 892 },
-  { page: "/proprietati", views: 987, uniqueViews: 743 },
-  { page: "/proprietate/*", views: 654, uniqueViews: 521 },
-  { page: "/echipa", views: 432, uniqueViews: 356 },
-  { page: "/contact", views: 289, uniqueViews: 234 },
-];
+// Format duration in seconds to MM:SS
+const formatDuration = (seconds: number) => {
+  if (!seconds) return '0:00';
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
 
 const AdminAnalytics = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState("7d");
-  const [visitorLogs, setVisitorLogs] = useState(mockVisitorLogs);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [timeRange, setTimeRange] = useState("7d");
+  const [activeTab, setActiveTab] = useState("overview");
 
-  const todaysStats = {
-    totalVisitors: 127,
-    uniqueVisitors: 89,
-    pageViews: 324,
-    avgSessionDuration: "2:34",
-    bounceRate: "45.2%",
-    topCountry: "România",
+  // Fetch analytics data
+  const { 
+    data: analyticsData, 
+    isLoading, 
+    refetch: refreshAnalytics 
+  } = useQuery({
+    queryKey: ['analytics', timeRange],
+    queryFn: () => analyticsService.getStats(timeRange),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Fetch visitor logs
+  const { 
+    data: logsData, 
+    isLoading: isLoadingLogs, 
+    refetch: refreshLogs 
+  } = useQuery({
+    queryKey: ['visitor-logs'],
+    queryFn: () => analyticsService.getVisitorLogs(1, 50),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Fetch daily stats
+  const { 
+    data: dailyStatsData, 
+    isLoading: isLoadingDailyStats 
+  } = useQuery({
+    queryKey: ['daily-stats', timeRange],
+    queryFn: () => analyticsService.getDailyStats(parseInt(timeRange)),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    enabled: timeRange !== '1d', // Don't fetch for 'today' view
+  });
+
+  // Fetch page stats
+  const { 
+    data: pageStatsData, 
+    isLoading: isLoadingPageStats 
+  } = useQuery({
+    queryKey: ['page-stats'],
+    queryFn: () => analyticsService.getPageStats(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+  // Handle refresh
+  const refreshData = () => {
+    refreshAnalytics();
+    refreshLogs();
   };
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsRefreshing(false);
-  };
+  // Calculate totals from analytics data
+  const totalVisitors = analyticsData?.data?.totalVisitors || 0;
+  const uniqueVisitors = analyticsData?.data?.uniqueVisitors || 0;
+  const pageViews = analyticsData?.data?.pageViews || 0;
+  const avgSessionDuration = analyticsData?.data?.avgSessionDuration || '0:00';
+  const bounceRate = analyticsData?.data?.bounceRate || '0%';
+  const topCountry = analyticsData?.data?.topCountry || 'N/A';
+  
+  // Prepare chart data
+  const chartData = dailyStatsData?.data?.map(day => ({
+    date: format(new Date(day.date), 'MMM d'),
+    visitors: day.uniqueVisitors,
+    pageViews: day.pageViews
+  })) || [];
 
+  // Prepare page stats
+  const pageStats = pageStatsData?.data?.map(page => ({
+    page: page.path,
+    views: page.views,
+    uniqueViews: page.uniqueVisitors,
+    avgTime: formatDuration(page.avgTimeOnPage)
+  })) || [];
+
+  // Prepare visitor logs
+  const visitorLogs = (logsData?.data?.data || []).map((log: any) => ({
+    id: log.id,
+    ip: log.ipAddress,
+    page: log.page,
+    referrer: log.referrer || 'Direct',
+    date: formatDate(log.visitedAt),
+    duration: formatDuration(log.duration)
+  }));
+
+  // Handle CSV export
   const handleExport = () => {
-    // Simulate CSV export
+    const header = "Timestamp,IP,Page,Referrer,Duration\n";
     const csvContent = visitorLogs
-      .map(
-        (log) =>
-          `${log.timestamp},${log.ip},${log.location},${log.device},${log.browser},${log.page},${log.duration},${log.referrer}`,
+      .map(log => 
+        `"${log.date}",${log.ip},"${log.page}","${log.referrer}",${log.duration}`
       )
       .join("\n");
-
-    const header =
-      "Timestamp,IP,Location,Device,Browser,Page,Duration,Referrer\n";
-    const blob = new Blob([header + csvContent], { type: "text/csv" });
+    
+    const blob = new Blob([header + csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -173,267 +183,295 @@ const AdminAnalytics = () => {
     }
   };
 
+  // Tabs for different views
+  const tabs = [
+    { id: 'overview', label: 'Prezentare generală' },
+    { id: 'pages', label: 'Pagini' },
+    { id: 'visitors', label: 'Vizitatori' },
+  ];
+
+  if (isLoading || isLoadingLogs || isLoadingDailyStats || isLoadingPageStats) {
+    return (
+      <div className="container mx-auto p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-10 w-48" />
+          <div className="flex gap-2">
+            <Skeleton className="h-10 w-40" />
+            <Skeleton className="h-10 w-24" />
+          </div>
+        </div>
+        <div className="grid gap-6">
+          <Skeleton className="h-80 w-full" />
+          <Skeleton className="h-96 w-full" />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Analytics & Loguri
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Monitorizează traficul și comportamentul vizitatorilor
+          <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
+          <p className="text-muted-foreground">
+            Monitorizează performanța site-ului și activitatea vizitatorilor
           </p>
         </div>
-        <div className="flex gap-3">
-          <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
+        <div className="flex items-center gap-2">
+          <Select
+            value={timeRange}
+            onValueChange={setTimeRange}
+            disabled={isLoading}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Perioadă" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="24h">Ultimele 24h</SelectItem>
-              <SelectItem value="7d">Ultimele 7 zile</SelectItem>
-              <SelectItem value="30d">Ultimele 30 zile</SelectItem>
-              <SelectItem value="90d">Ultimele 90 zile</SelectItem>
+              <SelectItem value="1">Astăzi</SelectItem>
+              <SelectItem value="7">Ultimele 7 zile</SelectItem>
+              <SelectItem value="30">Ultimele 30 de zile</SelectItem>
+              <SelectItem value="90">Ultimele 90 de zile</SelectItem>
+              <SelectItem value="365">Ultimul an</SelectItem>
             </SelectContent>
           </Select>
-          <Button
-            variant="outline"
-            onClick={handleRefresh}
-            disabled={isRefreshing}
+          <Button 
+            variant="outline" 
+            onClick={refreshData} 
+            disabled={isLoading}
           >
             <RefreshCw
-              className={`w-4 h-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
+              className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}
             />
-            {isRefreshing ? "Se actualizează..." : "Actualizează"}
+            Actualizează
           </Button>
-          <Button
+          <Button 
+            variant="outline" 
             onClick={handleExport}
-            className="bg-red-600 hover:bg-red-700"
+            disabled={visitorLogs.length === 0}
           >
-            <Download className="w-4 h-4 mr-2" />
-            Export CSV
+            <Download className="mr-2 h-4 w-4" />
+            Exportă CSV
           </Button>
         </div>
       </div>
 
-      {/* Today's Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Vizitatori Totali
-            </CardTitle>
-            <Users className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {todaysStats.totalVisitors}
-            </div>
-            <p className="text-xs text-green-600">+12% față de ieri</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Vizitatori Unici
-            </CardTitle>
-            <Eye className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {todaysStats.uniqueVisitors}
-            </div>
-            <p className="text-xs text-green-600">+8% față de ieri</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Vizualizări</CardTitle>
-            <MousePointer className="h-4 w-4 text-purple-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{todaysStats.pageViews}</div>
-            <p className="text-xs text-green-600">+15% față de ieri</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Durata Medie</CardTitle>
-            <Calendar className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {todaysStats.avgSessionDuration}
-            </div>
-            <p className="text-xs text-green-600">+5% față de ieri</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Rata de Respingere
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{todaysStats.bounceRate}</div>
-            <p className="text-xs text-red-600">+2% față de ieri</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Țara Principală
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">🇷🇴</div>
-            <p className="text-xs text-gray-600">{todaysStats.topCountry}</p>
-          </CardContent>
-        </Card>
+      {/* Tabs */}
+      <div className="border-b">
+        <nav className="-mb-px flex space-x-8">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium ${
+                activeTab === tab.id
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:border-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Overview Tab */}
+      {activeTab === 'overview' && (
+        <>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Vizitatori Totali</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{totalVisitors}</div>
+                <p className="text-xs text-muted-foreground">
+                  {uniqueVisitors} vizitatori unici
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Pagini Vizualizate</CardTitle>
+                <MousePointer className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{pageViews}</div>
+                <p className="text-xs text-muted-foreground">
+                  {pageStats.length} pagini urmărite
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Durată Medie</CardTitle>
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{avgSessionDuration}</div>
+                <p className="text-xs text-muted-foreground">
+                  per vizită
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Țară Top</CardTitle>
+                <Globe className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{topCountry}</div>
+                <p className="text-xs text-muted-foreground">
+                  {bounceRate} rată de respingere
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Traffic Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Trafic</CardTitle>
+              <CardDescription>
+                Evoluția traficului în perioada selectată
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="h-80">
+              {chartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line
+                      type="monotone"
+                      dataKey="visitors"
+                      name="Vizitatori"
+                      stroke="#3b82f6"
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="pageViews"
+                      name="Pagini vizualizate"
+                      stroke="#8b5cf6"
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex h-full items-center justify-center text-muted-foreground">
+                  <AlertCircle className="mr-2 h-4 w-4" />
+                  <span>Nu există date pentru perioada selectată</span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      )}
+
+      {/* Pages Tab */}
+      {activeTab === 'pages' && (
         <Card>
           <CardHeader>
-            <CardTitle>Trafic Zilnic</CardTitle>
+            <CardTitle>Statistici pagini</CardTitle>
             <CardDescription>
-              Vizitatori și vizualizări în ultimele 7 zile
+              Cele mai vizualizate pagini și performanța acestora
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={mockDailyStats}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="date"
-                  tickFormatter={(value) =>
-                    new Date(value).toLocaleDateString("ro-RO", {
-                      month: "short",
-                      day: "numeric",
-                    })
-                  }
-                />
-                <YAxis />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey="visitors"
-                  stroke="#dc2626"
-                  strokeWidth={2}
-                  name="Vizitatori"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="pageViews"
-                  stroke="#16a34a"
-                  strokeWidth={2}
-                  name="Vizualizări"
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Pagină</TableHead>
+                  <TableHead className="text-right">Vizualizări</TableHead>
+                  <TableHead className="text-right">Vizitatori Unici</TableHead>
+                  <TableHead className="text-right">Timp Mediu</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pageStats.map((page) => (
+                  <TableRow key={page.page}>
+                    <TableCell className="whitespace-nowrap">
+                      {page.page}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {page.views}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {page.uniqueViews}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {page.avgTime}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
+      )}
 
+      {/* Visitors Tab */}
+      {activeTab === 'visitors' && (
         <Card>
           <CardHeader>
-            <CardTitle>Pagini Populare</CardTitle>
-            <CardDescription>Cele mai vizitate pagini</CardDescription>
+            <CardTitle>Vizitatori</CardTitle>
+            <CardDescription>
+              Informații despre vizitatori și activitatea acestora
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={mockPageStats}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="page" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="views" fill="#dc2626" name="Vizualizări Totale" />
-                <Bar
-                  dataKey="uniqueViews"
-                  fill="#16a34a"
-                  name="Vizualizări Unice"
-                />
-              </BarChart>
-            </ResponsiveContainer>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Dată</TableHead>
+                  <TableHead>IP</TableHead>
+                  <TableHead>Pagină</TableHead>
+                  <TableHead>Referință</TableHead>
+                  <TableHead className="text-right">Durată</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {visitorLogs.length > 0 ? (
+                  visitorLogs.map((log) => (
+                    <TableRow key={log.id}>
+                      <TableCell className="whitespace-nowrap">
+                        {log.date}
+                      </TableCell>
+                      <TableCell>{log.ip}</TableCell>
+                      <TableCell className="max-w-[200px] truncate">
+                        {log.page}
+                      </TableCell>
+                      <TableCell className="max-w-[150px] truncate">
+                        {log.referrer}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {log.duration}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell 
+                      colSpan={5} 
+                      className="text-center py-8 text-muted-foreground"
+                    >
+                      <div className="flex flex-col items-center gap-2">
+                        <AlertCircle className="h-8 w-8" />
+                        <span>Nu există date disponibile</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
-      </div>
-
-      {/* Recent Visitor Logs */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Loguri Vizitatori în Timp Real</CardTitle>
-          <CardDescription>
-            Ultimele sesiuni de vizitatori pe site (actualizat automat)
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Timestamp</TableHead>
-                <TableHead>Locație</TableHead>
-                <TableHead>Dispozitiv</TableHead>
-                <TableHead>Browser</TableHead>
-                <TableHead>Pagină</TableHead>
-                <TableHead>Durata</TableHead>
-                <TableHead>Sursă</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {visitorLogs.map((log) => (
-                <TableRow key={log.id}>
-                  <TableCell className="text-sm font-mono">
-                    {log.timestamp}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs">🇷🇴</span>
-                      <span className="text-sm">{log.location}</span>
-                    </div>
-                    <div className="text-xs text-gray-500">{log.ip}</div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <span>{getDeviceIcon(log.device)}</span>
-                      <span className="text-sm">{log.device}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-sm">{log.browser}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="text-xs">
-                      {log.page}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-sm font-mono">
-                    {log.duration}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        log.referrer === "Direct"
-                          ? "secondary"
-                          : log.referrer.includes("Google")
-                            ? "default"
-                            : "outline"
-                      }
-                      className="text-xs"
-                    >
-                      {log.referrer}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      )}
     </div>
   );
 };

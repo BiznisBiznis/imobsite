@@ -10,7 +10,22 @@ import { useToast } from "@/components/ui/use-toast";
 import { Plus, Edit, Trash2, Eye, Loader2 } from "lucide-react";
 import PropertyForm from "@/components/admin/PropertyForm";
 import { propertyService } from "@/services/api";
-import type { Property, CreatePropertyData } from "@/types/api";
+import type { Property } from "@/types/models";
+import type { PropertyFormData } from "@/types/models";
+
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+}
+
+interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
 
 const AdminProperties = () => {
   const [properties, setProperties] = useState<Property[]>([]);
@@ -26,13 +41,31 @@ const AdminProperties = () => {
   const fetchProperties = async () => {
     try {
       setLoading(true);
-      const response = await propertyService.getAll();
-      setProperties(response.data.data);
-      setError(null);
-    } catch (err) {
+      const response = await propertyService.getAll(1, 100); // Fetch first 100 properties
+      console.log('API Response:', response);
+      
+      if (response && response.data) {
+        if (Array.isArray(response.data)) {
+          setProperties(response.data);
+        } else if (response.data.data && Array.isArray(response.data.data)) {
+          setProperties(response.data.data);
+        } else {
+          console.error('Unexpected data format:', response.data);
+          throw new Error('Formatul datelor primite este invalid');
+        }
+        setError(null);
+      } else {
+        throw new Error('Nu s-au primit date de la server');
+      }
+    } catch (err: any) {
       console.error("Failed to fetch properties:", err);
-      setError("Nu am putut încărca proprietățile. Vă rugăm să încercați din nou.");
-      toast({ variant: "destructive", title: "Eroare", description: "Nu am putut încărca proprietățile." });
+      const errorMessage = err.response?.data?.message || err.message || "Eroare necunoscută";
+      setError(`Nu am putut încărca proprietățile: ${errorMessage}`);
+      toast({ 
+        variant: "destructive", 
+        title: "Eroare", 
+        description: `Nu am putut încărca proprietățile: ${errorMessage}`,
+      });
     } finally {
       setLoading(false);
     }
@@ -70,21 +103,70 @@ const AdminProperties = () => {
     }
   };
 
-  const handleFormSubmit = async (data: CreatePropertyData) => {
+  const handleFormSubmit = async (data: PropertyFormData) => {
+    console.log('Submitting form data:', data);
     setFormSubmitting(true);
     try {
       if (editingProperty) {
-        await propertyService.update(editingProperty.id, data);
-        toast({ title: "Succes", description: "Detaliile proprietății au fost actualizate." });
+        console.log('Updating property:', editingProperty.id, 'with data:', data);
+        const response = await propertyService.update(editingProperty.id, data);
+        console.log('Update response:', response);
+        toast({ 
+          title: "Succes", 
+          description: "Detaliile proprietății au fost actualizate." 
+        });
       } else {
-        await propertyService.create(data);
-        toast({ title: "Succes", description: "O nouă proprietate a fost adăugată." });
+        console.log('Creating new property with data:', data);
+        const response = await propertyService.create(data);
+        console.log('Create response:', response);
+        toast({ 
+          title: "Succes", 
+          description: "O nouă proprietate a fost adăugată." 
+        });
       }
       setIsFormOpen(false);
       fetchProperties(); // Refresh list
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to submit form:", err);
-      toast({ variant: "destructive", title: "Eroare", description: "A apărut o problemă. Vă rugăm încercați din nou." });
+      
+      let errorMessage = "A apărut o eroare. Vă rugăm încercați din nou.";
+      
+      if (err.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.error('Error response data:', err.response.data);
+        console.error('Error status:', err.response.status);
+        console.error('Error headers:', err.response.headers);
+        
+        if (err.response.data?.message) {
+          errorMessage = err.response.data.message;
+        } else if (err.response.status === 400) {
+          errorMessage = "Date invalide. Vă rugăm verificați toate câmpurile.";
+        } else if (err.response.status === 401) {
+          errorMessage = "Nu sunteți autentificat. Vă rugăm să vă autentificați din nou.";
+        } else if (err.response.status === 403) {
+          errorMessage = "Nu aveți permisiunea de a efectua această acțiune.";
+        } else if (err.response.status === 404) {
+          errorMessage = "Resursa solicitată nu a fost găsită.";
+        } else if (err.response.status >= 500) {
+          errorMessage = "Eroare internă a serverului. Vă rugăm încercați mai târziu.";
+        }
+      } else if (err.request) {
+        // The request was made but no response was received
+        console.error('No response received:', err.request);
+        errorMessage = "Nu s-a primit răspuns de la server. Verificați conexiunea la internet.";
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.error('Error setting up request:', err.message);
+        errorMessage = `Eroare: ${err.message}`;
+      }
+      
+      toast({ 
+        variant: "destructive", 
+        title: "Eroare", 
+        description: errorMessage,
+        duration: 5000
+      });
     } finally {
       setFormSubmitting(false);
     }
