@@ -24,9 +24,7 @@ const PropertyCarousel = ({ properties }: PropertyCarouselProps) => {
   }, [isAutoPlaying, properties.length]);
 
   const goToPrevious = () => {
-    setCurrentIndex((prev) =>
-      prev === 0 ? properties.length - 1 : prev - 1
-    );
+    setCurrentIndex((prev) => (prev === 0 ? properties.length - 1 : prev - 1));
   };
 
   const goToNext = () => {
@@ -49,8 +47,12 @@ const PropertyCarousel = ({ properties }: PropertyCarouselProps) => {
     return (
       <section className="bg-gray-100 pt-px pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-gray-800 mb-4">Anunțuri Recomandate</h2>
-          <p className="text-gray-600">Momentan nu sunt anunțuri disponibile.</p>
+          <h2 className="text-3xl font-bold text-gray-800 mb-4">
+            Anunțuri Recomandate
+          </h2>
+          <p className="text-gray-600">
+            Momentan nu sunt anunțuri disponibile.
+          </p>
         </div>
       </section>
     );
@@ -65,31 +67,34 @@ const PropertyCarousel = ({ properties }: PropertyCarouselProps) => {
           <div className="hidden lg:grid lg:grid-cols-4 gap-6 pt-8">
             {properties.map((property) => (
               <div key={property.id}>
-                <div className="bg-slate-700 rounded-2xl shadow-xl overflow-hidden h-full">
+                <div className="bg-white border-2 border-blue-500 rounded-2xl shadow-xl overflow-hidden h-full">
                   {/* Video Section - Portrait Format */}
                   <div className="relative">
-                    <div onClick={() => handlePropertyClick(property.id)} className="cursor-pointer">
+                    <div
+                      onClick={() => handlePropertyClick(property.id)}
+                      className="cursor-pointer"
+                    >
                       <VideoPlayer
                         videoUrl={property.videoUrl}
                         thumbnailUrl={property.thumbnailUrl}
-                        className="w-full h-[450px] object-cover"
+                        className="w-full h-[460px] object-cover"
                         aspectRatio="standard"
                       />
                     </div>
                   </div>
 
                   {/* Property Information */}
-                  <div className="p-4 text-center">
-                    <div className="text-xl font-bold text-gray-200 mb-3 font-heading">
+                  <div className="p-3 text-center">
+                    <div className="text-xl font-bold text-gray-800 mb-2 font-heading">
                       {property.price.toLocaleString()} €
                     </div>
-                    <h3 className="text-base font-medium text-gray-300 mb-3 font-primary line-clamp-2">
+                    <h3 className="text-base font-medium text-gray-700 mb-2 font-primary line-clamp-2">
                       {property.title}
                     </h3>
 
                     <button
                       onClick={() => handlePropertyClick(property.id)}
-                      className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-4 px-8 rounded-md transition-all duration-300 transform hover:scale-105 font-primary shadow-lg hover:shadow-xl tracking-wide uppercase border border-red-500/20"
+                      className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-2 px-6 rounded-md transition-all duration-300 transform hover:scale-105 font-primary shadow-lg hover:shadow-xl tracking-wide uppercase border border-red-500/20"
                     >
                       Vezi Detalii
                     </button>
@@ -133,7 +138,10 @@ const PropertyCarousel = ({ properties }: PropertyCarouselProps) => {
                     <div className="bg-slate-700 rounded-2xl shadow-xl overflow-hidden">
                       {/* Video Section - Portrait Format */}
                       <div className="relative">
-                        <div onClick={() => handlePropertyClick(property.id)} className="cursor-pointer">
+                        <div
+                          onClick={() => handlePropertyClick(property.id)}
+                          className="cursor-pointer"
+                        >
                           <VideoPlayer
                             videoUrl={property.videoUrl}
                             thumbnailUrl={property.thumbnailUrl}
