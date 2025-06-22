@@ -67,7 +67,7 @@ const PropertyCarousel = ({ properties }: PropertyCarouselProps) => {
           <div className="hidden lg:grid lg:grid-cols-4 gap-6 pt-8">
             {properties.map((property) => (
               <div key={property.id}>
-                <div className="bg-white border-2 border-blue-500 rounded-2xl shadow-xl overflow-hidden h-full">
+                <div className="bg-white border-2 border-red-600 rounded-xl shadow-xl overflow-hidden h-full">
                   {/* Video Section - Portrait Format */}
                   <div className="relative">
                     <div
@@ -77,24 +77,24 @@ const PropertyCarousel = ({ properties }: PropertyCarouselProps) => {
                       <VideoPlayer
                         videoUrl={property.videoUrl}
                         thumbnailUrl={property.thumbnailUrl}
-                        className="w-full h-[460px] object-cover"
+                        className="w-full h-[480px] object-cover"
                         aspectRatio="standard"
                       />
                     </div>
                   </div>
 
                   {/* Property Information */}
-                  <div className="p-3 text-center">
-                    <div className="text-xl font-bold text-gray-800 mb-2 font-heading">
+                  <div className="p-2 text-center">
+                    <div className="text-lg font-bold text-gray-800 mb-1 font-heading">
                       {property.price.toLocaleString()} €
                     </div>
-                    <h3 className="text-base font-medium text-gray-700 mb-2 font-primary line-clamp-2">
+                    <h3 className="text-sm font-medium text-gray-700 mb-3 font-primary line-clamp-2">
                       {property.title}
                     </h3>
 
                     <button
                       onClick={() => handlePropertyClick(property.id)}
-                      className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-2 px-6 rounded-md transition-all duration-300 transform hover:scale-105 font-primary shadow-lg hover:shadow-xl tracking-wide uppercase border border-red-500/20"
+                      className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-1.5 px-4 rounded text-xs transition-all duration-300 transform hover:scale-105 font-primary shadow-md hover:shadow-lg tracking-wide uppercase border border-red-500/20"
                     >
                       Vezi Detalii
                     </button>
