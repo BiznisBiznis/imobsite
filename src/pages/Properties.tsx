@@ -100,7 +100,7 @@ const Properties = () => {
   });
 
   const handlePropertyClick = (propertyId: string | number) => {
-    navigate(`/property/${propertyId}`);
+    navigate(`/proprietate/${propertyId}`);
   };
 
   const handleNextPage = () => {
