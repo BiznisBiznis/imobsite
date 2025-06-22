@@ -208,42 +208,71 @@ const PropertyForm = ({
             )}
           />
 
-                    <FormField
-            control={form.control}
-            name="videoUrl"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Embed Video YouTube</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Lipește aici link-ul YouTube (ex: https://www.youtube.com/watch?v=...)"
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Poți lipi link-ul direct de la un video YouTube (normal sau Shorts).
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {/* Video Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+              control={form.control}
+              name="videoUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Embed Video YouTube</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Lipește aici link-ul YouTube (ex: https://www.youtube.com/watch?v=...)"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Poți lipi link-ul direct de la un video YouTube (normal sau
+                    Shorts).
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <FormField
-            control={form.control}
-            name="thumbnailUrl"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>URL Thumbnail (opțional)</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="https://example.com/image.jpg"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <FormField
+              control={form.control}
+              name="thumbnailUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>URL Thumbnail (opțional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="https://example.com/image.jpg"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Sau lasă gol pentru thumbnail-ul automat din YouTube
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Video Preview */}
+          {form.watch("videoUrl") && (
+            <div className="border rounded-lg p-4 bg-gray-50">
+              <h4 className="text-sm font-medium mb-3">Previzualizare Video</h4>
+              <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
+                <iframe
+                  src={form
+                    .watch("videoUrl")
+                    ?.replace("watch?v=", "embed/")
+                    .replace("youtu.be/", "youtube.com/embed/")}
+                  className="w-full h-full"
+                  allowFullScreen
+                  title="Video Preview"
+                />
+              </div>
+              <p className="text-xs text-gray-600 mt-2">
+                💡 Pentru a selecta un thumbnail personalizat din video, poți
+                face screenshot și uploada imaginea
+              </p>
+            </div>
+          )}
 
           <FormField
             control={form.control}
