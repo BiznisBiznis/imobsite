@@ -141,7 +141,7 @@ const Properties = () => {
       );
     }
 
-    if (!data || data.data.length === 0) {
+    if (!displayProperties || displayProperties.length === 0) {
       return (
         <div className="text-center py-16 col-span-full">
           <p className="text-slate-500">
