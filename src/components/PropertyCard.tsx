@@ -35,13 +35,13 @@ const PropertyCard = ({
   onClick,
 }: PropertyCardProps) => {
   return (
-    <div className="bg-slate-700 rounded-lg shadow-sm property-card-hover luxury-shadow group overflow-hidden w-full h-[500px] flex flex-col property-card">
+    <div className="bg-white border-2 border-red-600 rounded-xl shadow-xl property-card-hover luxury-shadow group overflow-hidden w-full h-[500px] flex flex-col property-card">
       {/* Video Player - Top Section */}
       <div className="relative rounded-t-lg overflow-hidden">
         <VideoPlayer
           videoUrl={videoUrl}
           thumbnailUrl={thumbnailUrl}
-          className="w-full h-[320px] cursor-pointer"
+          className="w-full h-[340px] cursor-pointer"
           aspectRatio="mobile"
         />
 
@@ -62,9 +62,9 @@ const PropertyCard = ({
       </div>
 
       {/* Property Information - Improved Typography */}
-      <div className="px-3 pt-3 pb-3 text-gray-300 flex flex-col h-[180px] justify-between text-center">
+      <div className="px-3 pt-2 pb-2 text-gray-800 flex flex-col h-[160px] justify-between text-center">
         {/* Price - Large at top with elegant metallic font */}
-        <div className="text-xl font-bold text-gray-200 mb-3 font-heading">
+        <div className="text-lg font-bold text-gray-800 mb-1 font-heading">
           {currency}
           {price.toLocaleString()}
         </div>
