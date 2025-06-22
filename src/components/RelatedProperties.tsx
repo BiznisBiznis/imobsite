@@ -1,21 +1,29 @@
 import { useNavigate } from "react-router-dom";
 import { useProperties } from "@/hooks/useApi";
-import PropertyCard from "./PropertyCard";
+import PropertyCard, { PropertyCardData } from "./PropertyCard";
 import { LoaderCircle } from "lucide-react";
+import type { Property } from "@/types/api";
 
 interface RelatedPropertiesProps {
   currentPropertyId: string;
-  city: string;
+  maxItems?: number;
 }
 
-const RelatedProperties = ({ currentPropertyId, city }: RelatedPropertiesProps) => {
+const RelatedProperties = ({
+  currentPropertyId,
+  maxItems = 3,
+}: RelatedPropertiesProps) => {
   const navigate = useNavigate();
-  // Fetch 4 properties from the same city to have 3 to show after filtering
-  const { data: propertiesResponse, isLoading, isError } = useProperties(1, 4, { city });
+  // Fetch enough properties to have maxItems to show after filtering current one
+  const {
+    data: propertiesResponse,
+    isLoading,
+    isError,
+  } = useProperties(1, maxItems + 2, {});
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-40">
+      <div className="flex justify-center items-center h-40 col-span-full">
         <LoaderCircle className="animate-spin text-red-600 w-8 h-8" />
       </div>
     );
@@ -25,31 +33,42 @@ const RelatedProperties = ({ currentPropertyId, city }: RelatedPropertiesProps) 
     return null; // Or show an error message
   }
 
-  const relatedProperties = propertiesResponse.data.data
+  const relatedProperties: PropertyCardData[] = propertiesResponse.data.data
     .filter((p) => p.id !== currentPropertyId)
-    .slice(0, 3);
+    .slice(0, maxItems)
+    .map(property => ({
+      id: property.id,
+      title: property.title,
+      price: property.price,
+      currency: property.currency,
+      location: `${property.city}, ${property.county}`,
+      area: property.area,
+      rooms: property.rooms,
+      type: property.type,
+      videoUrl: property.videoUrl,
+      thumbnailUrl: property.thumbnailUrl,
+      badges: property.badges || [],
+    }));
 
   if (relatedProperties.length === 0) {
     return null;
   }
 
   return (
-    <div className="mb-8">
-      <h2 className="text-2xl font-bold text-slate-800 mb-6">
-        Te-ar putea interesa și
-      </h2>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {relatedProperties.map((property, index) => (
+    <>
+      {relatedProperties.map((property, index) => (
+        <div
+          key={property.id}
+          className="transform transition-all duration-300 hover:scale-[1.02]"
+        >
           <PropertyCard
-            key={property.id}
-            {...property}
+            property={property}
             index={index}
             onClick={() => navigate(`/proprietate/${property.id}`)}
           />
-        ))}
-      </div>
-    </div>
+        </div>
+      ))}
+    </>
   );
 };
 

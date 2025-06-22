@@ -96,11 +96,17 @@ export function YouTubePlayer({
       params.append('mute', muted ? '1' : '0');
       params.append('modestbranding', '1');
       params.append('rel', '0');
+      params.append('showinfo', '0');
+      params.append('iv_load_policy', '3'); // Hide annotations
+      params.append('fs', '0'); // Hide fullscreen button
       
       if (loop) {
         params.append('playlist', videoId); // Required for loop to work
       }
       params.append('mute', muted ? '1' : '0');
+      
+      // Add origin to prevent showing related videos
+      params.append('origin', window.location.origin);
       const embedUrl = `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
       setEmbedUrl(embedUrl);
       setError(null);

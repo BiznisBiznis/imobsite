@@ -15,7 +15,22 @@ const TeamPage = () => {
       try {
         setLoading(true);
         const response = await teamService.getAll();
-        setTeamMembers(response.data.data);
+        
+        // Transform the API response to match the TeamMember type
+        const formattedMembers = response.data.data.map((member: any) => ({
+          id: member.id,
+          name: member.firstName && member.lastName 
+            ? `${member.firstName} ${member.lastName}` 
+            : member.name || 'Nume Agent',
+          role: member.role || 'Agent Imobiliar',
+          phone: member.phone || '',
+          email: member.email || '',
+          image: member.image || '/placeholder-avatar.jpg',
+          createdAt: member.createdAt || new Date().toISOString(),
+          updatedAt: member.updatedAt || new Date().toISOString()
+        }));
+        
+        setTeamMembers(formattedMembers);
         setError(null);
       } catch (err) {
         console.error("Failed to fetch team members:", err);
@@ -89,21 +104,7 @@ const TeamPage = () => {
             </div>
           )}
 
-          {/* Bottom section */}
-          <div className="mt-16 text-center">
-            <div className="bg-white rounded-2xl p-8 shadow-lg border border-red-100 max-w-2xl mx-auto">
-              <h2 className="text-2xl font-bold text-slate-800 mb-4">
-                Alătură-te echipei noastre!
-              </h2>
-              <p className="text-slate-600 mb-6">
-                Suntem mereu în căutarea unor profesioniști pasionați de
-                domeniul imobiliar.
-              </p>
-              <button className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-xl font-medium transition-all duration-200 shadow-md hover:shadow-lg">
-                Trimite CV-ul tău
-              </button>
-            </div>
-          </div>
+          {/* Bottom section removed as requested */}
         </div>
       </div>
 

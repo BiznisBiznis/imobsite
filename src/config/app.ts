@@ -24,9 +24,9 @@ export const COMPANY_CONFIG = {
 
   // Contact principal
   contact: {
-    phone: "+40 768 111 564",
-    email: "office@trambitas.ro",
-    whatsapp: "+40 768 111 564",
+    phone: "0742 801 123",
+    email: "casavis@yahoo.com",
+    whatsapp: "0742 801 123",
   },
 
   // Adresa

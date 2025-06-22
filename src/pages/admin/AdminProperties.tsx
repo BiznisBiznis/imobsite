@@ -1,34 +1,26 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/components/ui/use-toast";
-import { Plus, Edit, Trash2, Eye, Loader2 } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Loader2, Search } from "lucide-react";
 import PropertyForm from "@/components/admin/PropertyForm";
 import { propertyService } from "@/services/api";
-import type { Property } from "@/types/models";
-import type { PropertyFormData } from "@/types/models";
+import type { Property, ApiResponse, PaginatedData } from "@/types/api";
+import type { PropertyType, PropertyCategory, PropertyStatus, PropertyFormData as ModelPropertyFormData } from "@/types/models";
 
-interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
-}
-
-interface PaginatedResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
+// Use the PropertyFormData from models but make all fields optional for updates
+type PropertyFormData = Partial<ModelPropertyFormData>;
 
 const AdminProperties = () => {
   const [properties, setProperties] = useState<Property[]>([]);
+  const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
   const [deletingProperty, setDeletingProperty] = useState<Property | null>(null);
@@ -42,29 +34,26 @@ const AdminProperties = () => {
     try {
       setLoading(true);
       const response = await propertyService.getAll(1, 100); // Fetch first 100 properties
-      console.log('API Response:', response);
       
+      // The response is of type ApiResponse<PaginatedData<Property>>
       if (response && response.data) {
-        if (Array.isArray(response.data)) {
-          setProperties(response.data);
-        } else if (response.data.data && Array.isArray(response.data.data)) {
-          setProperties(response.data.data);
-        } else {
-          console.error('Unexpected data format:', response.data);
-          throw new Error('Formatul datelor primite este invalid');
-        }
+        // Check if the data is in the expected format
+        const propertiesData = Array.isArray(response.data) 
+          ? response.data 
+          : response.data.data || [];
+        
+        setProperties(propertiesData);
         setError(null);
       } else {
-        throw new Error('Nu s-au primit date de la server');
+        throw new Error("Format de răspuns neașteptat de la server");
       }
     } catch (err: any) {
       console.error("Failed to fetch properties:", err);
-      const errorMessage = err.response?.data?.message || err.message || "Eroare necunoscută";
-      setError(`Nu am putut încărca proprietățile: ${errorMessage}`);
+      setError("Nu am putut încărca proprietățile. Vă rugăm să încercați din nou.");
       toast({ 
         variant: "destructive", 
         title: "Eroare", 
-        description: `Nu am putut încărca proprietățile: ${errorMessage}`,
+        description: err.response?.data?.message || "Nu am putut încărca proprietățile." 
       });
     } finally {
       setLoading(false);
@@ -103,70 +92,144 @@ const AdminProperties = () => {
     }
   };
 
-  const handleFormSubmit = async (data: PropertyFormData) => {
-    console.log('Submitting form data:', data);
+  const handleFormSubmit = async (formData: any) => {
     setFormSubmitting(true);
     try {
       if (editingProperty) {
-        console.log('Updating property:', editingProperty.id, 'with data:', data);
-        const response = await propertyService.update(editingProperty.id, data);
+        // For updates, we need to ensure required fields are present
+        const updateData: any = {};
+        
+        // Only include fields that have changed
+        Object.keys(formData).forEach(key => {
+          if (JSON.stringify(formData[key]) !== JSON.stringify(editingProperty[key as keyof Property])) {
+            updateData[key] = formData[key];
+          }
+        });
+        
+        // Ensure required fields are always included in the update
+        const requiredFields = ['title', 'price', 'type', 'category', 'status'];
+        requiredFields.forEach(field => {
+          if (formData[field] !== undefined) {
+            updateData[field] = formData[field];
+          } else if (editingProperty[field as keyof Property] !== undefined) {
+            updateData[field] = editingProperty[field as keyof Property];
+          }
+        });
+        
+        // Handle empty arrays properly
+        if (formData.amenities && formData.amenities.length === 0) {
+          updateData.amenities = [];
+        }
+        
+        // Ensure we're not sending undefined values, but keep empty strings for agentId to clear it
+        Object.keys(updateData).forEach(key => {
+          if (key === 'agentId') {
+            // Keep null values for agentId to allow clearing the agent
+            if (updateData[key] === '') {
+              updateData[key] = null;
+            }
+          } else if (updateData[key] === undefined || updateData[key] === '') {
+            delete updateData[key];
+          }
+        });
+        
+        console.log('Updating property with data:', updateData);
+        
+        // Ensure agentId is included in the update if it's in the form data
+        if (formData.agentId !== undefined) {
+          updateData.agentId = formData.agentId;
+        }
+        
+        const response = await propertyService.update(editingProperty.id, updateData);
         console.log('Update response:', response);
+        
         toast({ 
           title: "Succes", 
-          description: "Detaliile proprietății au fost actualizate." 
+          description: "Detaliile proprietății au fost actualizate cu succes!" 
         });
       } else {
-        console.log('Creating new property with data:', data);
-        const response = await propertyService.create(data);
+        // For new properties, prepare the data with all required fields
+        const createData: any = {
+          // Required fields with defaults
+          id: crypto.randomUUID(), // Generate a UUID for the new property
+          title: formData.title,
+          price: formData.price,
+          area: formData.area,
+          type: formData.type,
+          category: formData.category || 'vanzare',
+          status: formData.status || 'disponibil',
+          
+          // Location fields - make sure at least one is provided
+          location: formData.address || formData.city || 'Nespecificat',
+          address: formData.address || null,
+          city: formData.city || null,
+          county: formData.county || null,
+          
+          // Description with default
+          description: formData.description || '',
+          
+          // Conditional fields based on property type
+          ...(formData.type !== 'Teren' ? {
+            rooms: formData.rooms || 0,
+            floor: formData.floor || 0,
+            yearBuilt: formData.yearBuilt || new Date().getFullYear()
+          } : {
+            rooms: 0,
+            floor: 0,
+            yearBuilt: new Date().getFullYear()
+          }),
+          
+          // Media fields with defaults
+          videoUrl: formData.videoUrl || null,
+          thumbnailUrl: formData.thumbnailUrl || null,
+          
+          // Feature flags with defaults
+          featured: formData.featured || false,
+          currency: formData.currency || 'EUR',
+          
+          // Arrays with defaults
+          amenities: JSON.stringify(Array.isArray(formData.amenities) ? formData.amenities : []),
+          badges: JSON.stringify(Array.isArray(formData.badges) ? formData.badges : []),
+          
+          // System fields with defaults
+          viewsCount: 0,
+          contactCount: 0,
+          createdAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
+          updatedAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
+        };
+        
+        // Handle undefined and empty values
+        Object.keys(createData).forEach(key => {
+          if (key === 'agentId') {
+            // Keep null values for agentId to allow clearing the agent
+            if (createData[key] === '') {
+              createData[key] = null;
+            }
+          } else if (createData[key] === undefined || createData[key] === '') {
+            delete createData[key];
+          }
+        });
+        
+        // Only include agentId if it's provided and not empty
+        if (formData.agentId && formData.agentId.trim() !== '') {
+          createData.agentId = formData.agentId;
+        }
+        
+        console.log('Creating property with data:', createData);
+        
+        const response = await propertyService.create(createData);
         console.log('Create response:', response);
+        
         toast({ 
           title: "Succes", 
-          description: "O nouă proprietate a fost adăugată." 
+          description: "O nouă proprietate a fost adăugată cu succes!" 
         });
       }
       setIsFormOpen(false);
       fetchProperties(); // Refresh list
-    } catch (err: any) {
+    } catch (err) {
       console.error("Failed to submit form:", err);
-      
-      let errorMessage = "A apărut o eroare. Vă rugăm încercați din nou.";
-      
-      if (err.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
-        console.error('Error response data:', err.response.data);
-        console.error('Error status:', err.response.status);
-        console.error('Error headers:', err.response.headers);
-        
-        if (err.response.data?.message) {
-          errorMessage = err.response.data.message;
-        } else if (err.response.status === 400) {
-          errorMessage = "Date invalide. Vă rugăm verificați toate câmpurile.";
-        } else if (err.response.status === 401) {
-          errorMessage = "Nu sunteți autentificat. Vă rugăm să vă autentificați din nou.";
-        } else if (err.response.status === 403) {
-          errorMessage = "Nu aveți permisiunea de a efectua această acțiune.";
-        } else if (err.response.status === 404) {
-          errorMessage = "Resursa solicitată nu a fost găsită.";
-        } else if (err.response.status >= 500) {
-          errorMessage = "Eroare internă a serverului. Vă rugăm încercați mai târziu.";
-        }
-      } else if (err.request) {
-        // The request was made but no response was received
-        console.error('No response received:', err.request);
-        errorMessage = "Nu s-a primit răspuns de la server. Verificați conexiunea la internet.";
-      } else {
-        // Something happened in setting up the request that triggered an Error
-        console.error('Error setting up request:', err.message);
-        errorMessage = `Eroare: ${err.message}`;
-      }
-      
-      toast({ 
-        variant: "destructive", 
-        title: "Eroare", 
-        description: errorMessage,
-        duration: 5000
-      });
+      toast({ variant: "destructive", title: "Eroare", description: "A apărut o problemă. Vă rugăm încercați din nou." });
     } finally {
       setFormSubmitting(false);
     }
@@ -175,6 +238,30 @@ const AdminProperties = () => {
   const handleViewProperty = (property: Property) => {
     navigate(`/proprietate/${property.id}`);
   };
+
+  // Filter properties based on search term
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setFilteredProperties(properties);
+      return;
+    }
+
+    const searchLower = searchTerm.toLowerCase();
+    const filtered = properties.filter(property => 
+      property.title.toLowerCase().includes(searchLower) ||
+      (property.type && property.type.toLowerCase().includes(searchLower)) ||
+      (property.category && property.category.toLowerCase().includes(searchLower))
+    );
+    
+    setFilteredProperties(filtered);
+  }, [searchTerm, properties]);
+
+  // Initialize filtered properties when properties are loaded
+  useEffect(() => {
+    if (properties.length > 0 && filteredProperties.length === 0) {
+      setFilteredProperties(properties);
+    }
+  }, [properties, filteredProperties]);
 
   const renderContent = () => {
     if (loading) {
@@ -215,7 +302,7 @@ const AdminProperties = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {properties.map((property) => (
+          {filteredProperties.map((property) => (
             <TableRow key={property.id}>
               <TableCell className="font-medium">
                 <div className="truncate w-[280px]" title={property.title}>
@@ -260,14 +347,26 @@ const AdminProperties = () => {
   return (
     <div className="p-4 sm:p-6">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="space-y-2">
             <CardTitle>Management Proprietăți</CardTitle>
             <CardDescription>Adaugă, editează sau șterge proprietățile listate.</CardDescription>
           </div>
-          <Button onClick={handleCreate}>
-            <Plus className="mr-2 h-4 w-4" /> Adaugă Proprietate
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <div className="relative flex-1 sm:w-64">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Caută după titlu sau categorie..."
+                className="pl-8 w-full"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <Button onClick={handleCreate} className="w-full sm:w-auto">
+              <Plus className="mr-2 h-4 w-4" /> Adaugă Proprietate
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>{renderContent()}</CardContent>
       </Card>

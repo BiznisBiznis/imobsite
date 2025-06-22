@@ -10,18 +10,25 @@ export interface Property {
   price: number; // Prețul în EUR
   currency: string; // "EUR", "RON", etc.
   location: string; // Adresa completă
+  address?: string; // Adresa străzii (pentru formular)
   city: string; // Orașul
   county: string; // Județul
   area: number; // Suprafața în mp
   rooms?: number; // Numărul de camere (pentru apartamente)
   bathrooms?: number; // Numărul de băi
-  type: PropertyType; // Tipul proprietății
-  category: PropertyCategory; // Categorie (vânzare/închiriere)
-  status: PropertyStatus; // Statusul anunțului
+  type: string; // Tipul proprietății (string instead of PropertyType to match API)
+  category: string; // Categorie (vânzare/închiriere) - string to match API
+  status: string; // Statusul anunțului - string to match API
   featured: boolean; // Proprietate featured pe homepage
   videoUrl?: string; // URL video tur virtual
   thumbnailUrl?: string; // Imagine principală
-  images: PropertyImage[]; // Array de imagini
+  images: Array<{
+    id: string;
+    url: string;
+    alt: string;
+    order: number;
+    isPrimary: boolean;
+  }>; // Array de imagini
   amenities: string[]; // Facilități (parcare, balcon, etc.)
   energyClass?: string; // Clasa energetică (A, B, C, etc.)
   yearBuilt?: number; // Anul construcției
@@ -29,12 +36,21 @@ export interface Property {
   totalFloors?: number; // Total etaje (pentru apartamente)
   parking?: boolean; // Loc de parcare
   agentId: string; // ID-ul agentului responsabil
-  agent?: TeamMember; // Agentul responsabil (populat la cerere)
+  agent?: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    image?: string;
+  }; // Agentul responsabil (populat la cerere)
   viewsCount: number; // Numărul de vizualizări
   contactCount: number; // Numărul de contacte generate
-  createdAt: Date; // Data creării
-  updatedAt: Date; // Data ultimei modificări
-  publishedAt?: Date; // Data publicării
+  // Etichete pentru proprietate (ex: "Nou", "Vânzare", "Recomandat")
+  // Poate fi un array de string-uri, un string JSON, sau undefined
+  badges?: string[] | string;
+  createdAt: string; // Data creării (string in ISO format from API)
+  updatedAt: string; // Data ultimei modificări (string in ISO format from API)
+  publishedAt?: string; // Data publicării (string in ISO format from API)
   coordinates?: {
     latitude: number;
     longitude: number;

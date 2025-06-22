@@ -9,32 +9,33 @@ export function getYouTubeEmbedUrl(url: string): string | null {
   if (!url) return null;
 
   let videoId: string | null = null;
-  const isShorts = url.includes('/shorts/');
 
-  // Handle YouTube Shorts URL with query parameters: https://youtube.com/shorts/VIDEO_ID?si=PARAM
-  const shortsMatch = url.match(/(?:youtube\.com\/shorts\/|youtu\.be\/|\/embed\/|\/v\/|\/watch\?v=)([^?&\/]+)/i);
-  if (shortsMatch && shortsMatch[1]) {
-    videoId = shortsMatch[1];
+  // Standard URL: https://www.youtube.com/watch?v=VIDEO_ID
+  const standardUrlMatch = url.match(/[?&]v=([^&]+)/);
+  if (standardUrlMatch) {
+    videoId = standardUrlMatch[1];
   }
-  // Fallback for other URL formats
-  else if (url.includes('youtube.com/watch')) {
-    const standardMatch = url.match(/[?&]v=([^&]+)/i);
-    if (standardMatch) {
-      videoId = standardMatch[1];
+
+  // Shorts URL: https://www.youtube.com/shorts/VIDEO_ID
+  if (!videoId) {
+    const shortsUrlMatch = url.match(/\/shorts\/([^?]+)/);
+    if (shortsUrlMatch) {
+      videoId = shortsUrlMatch[1];
+    }
+  }
+
+  // Shortened URL: https://youtu.be/VIDEO_ID
+  if (!videoId) {
+    const shortenedUrlMatch = url.match(/youtu\.be\/([^?]+)/);
+    if (shortenedUrlMatch) {
+      videoId = shortenedUrlMatch[1];
     }
   }
 
   if (videoId) {
-    // Clean up any query parameters from the video ID
-    const cleanVideoId = videoId.split(/[?&]/)[0];
-    
-    // For Shorts, use the standard embed format with additional parameters
-    if (isShorts) {
-      return `https://www.youtube.com/embed/${cleanVideoId}?autoplay=0&mute=1&controls=1&showinfo=0&rel=0`;
-    }
-    // For regular videos
-    return `https://www.youtube.com/embed/${cleanVideoId}?autoplay=1&mute=1&loop=1&playlist=${cleanVideoId}&controls=1&showinfo=0&rel=0`;
+    // Return a clean embed URL with hidden title and channel name
+    return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=1&showinfo=0&rel=0&modestbranding=1&iv_load_policy=3&fs=0`;
   }
 
-  return null;
+  return null; // Return null if no valid YouTube video ID is found
 }

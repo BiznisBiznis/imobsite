@@ -13,9 +13,9 @@ const Footer = () => {
   return (
     <footer className="bg-slate-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
           {/* Left Column - Company Info & Contact */}
-          <div className="space-y-6">
+          <div className="md:col-span-4 space-y-6">
             {/* Company Info */}
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
@@ -82,7 +82,7 @@ const Footer = () => {
           </div>
 
           {/* Middle Column - Location & Map */}
-          <div className="space-y-4">
+          <div className="md:col-span-4 space-y-4 flex flex-col items-center">
             <h4 className="text-lg font-semibold text-white">
               Locația Noastră
             </h4>
@@ -100,32 +100,24 @@ const Footer = () => {
               </div>
 
               {/* Embedded Map */}
-              <div className="mt-3">
+              <div className="mt-3 w-full max-w-xs">
                 <iframe
-                  src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dOWTgamKKuV6qs&q=${COMPANY_CONFIG.address.coordinates}`}
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2742.123456789!2d26.766642989378298!3d46.24855786048749!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDbCsDE0JzU0LjgiTiAyNsKwNDUnNTkuOSJF!5e0!3m2!1sen!2sro!4v1234567890123!5m2!1sen!2sro"
                   width="100%"
-                  height="120"
+                  height="180"
                   style={{ border: 0 }}
                   allowFullScreen={false}
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
-                  className="rounded-lg"
+                  className="rounded-lg shadow-lg mx-auto"
                   title="Locația noastră"
                 />
               </div>
-
-              {/* Small link to open in full Google Maps */}
-              <button
-                onClick={openInMaps}
-                className="text-xs text-gray-400 hover:text-white transition-colors underline mt-2"
-              >
-                Deschide în Google Maps
-              </button>
             </div>
           </div>
 
           {/* Right Column - Quick Links */}
-          <div className="space-y-4">
+          <div className="md:col-span-4 space-y-4 md:ml-auto">
             <h4 className="text-lg font-semibold text-white">
               Navigare Rapidă
             </h4>

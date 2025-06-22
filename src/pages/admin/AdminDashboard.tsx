@@ -1,5 +1,5 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import {
   Card,
   CardContent,
@@ -8,7 +8,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Building,
   Users,
@@ -17,57 +16,38 @@ import {
   Plus,
   BarChart3,
   Settings,
-  AlertCircle,
 } from "lucide-react";
-import { propertyService } from "@/services/api";
-import { useAnalyticsStats } from "@/hooks/useApi";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Fetch properties data
-  const { data: propertiesData, isLoading: isLoadingProperties } = useQuery({
-    queryKey: ['dashboard-properties'],
-    queryFn: () => propertyService.getAll(1, 1000), // Get all properties
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch('/api/analytics/stats');
+        const data = await response.json();
+        if (data.success) {
+          setStats(data.data);
+        } else {
+          throw new Error(data.message || 'Failed to fetch stats');
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // For now, we'll use a fixed team member count since we don't have a team endpoint
-  // In a real app, you would fetch this from your API
-  const teamMemberCount = 0; // Default value
-  const isLoadingTeam = false; // No loading state for now
+    fetchStats();
+  }, []);
 
-  // Fetch analytics data
-  const { data: analyticsData, isLoading: isLoadingAnalytics } = useAnalyticsStats('1d');
-  
-  // Get today's visitors from analytics or default to 0
-  const todayVisitors = analyticsData?.data?.uniqueVisitors || 0;
-
-  // Calculate total property value
-  const totalValue = propertiesData?.data?.data?.reduce((sum: number, property: any) => {
-    return sum + (parseFloat(property.price) || 0);
-  }, 0) || 0;
-
-  // Format number with thousands separator
-  const formatNumber = (num: number) => {
-    return new Intl.NumberFormat('ro-RO').format(num);
-  };
-
-  // Format currency
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('ro-RO', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  // Stats data based on API responses
-  const stats = [
+  const formattedStats = stats ? [
     {
       title: "Total Proprietăți",
-      value: isLoadingProperties ? '...' : formatNumber(propertiesData?.data.total || 0),
+      value: stats.totalProperties,
       description: "Proprietăți active în portofoliu",
       icon: Building,
       color: "text-blue-600",
@@ -75,7 +55,7 @@ const AdminDashboard = () => {
     },
     {
       title: "Membri Echipă",
-      value: formatNumber(teamMemberCount),
+      value: stats.teamMembers,
       description: "Agenți imobiliari activi",
       icon: Users,
       color: "text-green-600",
@@ -83,7 +63,7 @@ const AdminDashboard = () => {
     },
     {
       title: "Valoare Totală",
-      value: isLoadingProperties ? '...' : formatCurrency(totalValue),
+      value: `€${(stats.totalValue / 1000000).toFixed(1)}M`,
       description: "Valoarea totală a proprietăților",
       icon: TrendingUp,
       color: "text-purple-600",
@@ -91,21 +71,13 @@ const AdminDashboard = () => {
     },
     {
       title: "Vizitatori Astăzi",
-value: isLoadingAnalytics ? '...' : formatNumber(todayVisitors),
-      description: "Vizitatori unici astăzi",
+      value: stats.visitorsToday,
+      description: "Vizitatori unici pe site",
       icon: Eye,
       color: "text-orange-600",
       bgColor: "bg-orange-50",
     },
-  ];
-
-  const recentActivities = [
-    'Proprietatea "Garsonieră ultracentral" a fost vizualizată de 15 ori',
-    "Alexandra Trâmbițașu a fost contactată pentru proprietatea #3",
-    'Nouă căutare: "apartament 3 camere București"',
-    'Proprietatea "Teren Chiaoda" a fost adăugată în favorite',
-    'Contact nou de la pagina "Echipa"',
-  ];
+  ] : [];
 
   return (
     <div className="space-y-6">
@@ -119,31 +91,38 @@ value: isLoadingAnalytics ? '...' : formatNumber(todayVisitors),
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <Card key={stat.title}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600">
-                  {stat.title}
-                </CardTitle>
-                <div className={`p-2 rounded-full ${stat.bgColor}`}>
-                  <Icon className={`w-4 h-4 ${stat.color}`} />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-gray-900">
-                  {stat.value}
-                </div>
-                <p className="text-xs text-gray-600 mt-1">{stat.description}</p>
-              </CardContent>
-            </Card>
-          );
-        })}
+        {loading ? (
+          <p>Loading...</p>
+        ) : error ? (
+          <p className="text-red-500">Error: {error}</p>
+        ) : (
+          formattedStats.map((stat) => {
+            const Icon = stat.icon;
+            return (
+              <Card key={stat.title}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600">
+                    {stat.title}
+                  </CardTitle>
+                  <div className={`p-2 rounded-full ${stat.bgColor}`}>
+                    <Icon className={`w-4 h-4 ${stat.color}`} />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-gray-900">
+                    {stat.value}
+                  </div>
+                  <p className="text-xs text-gray-600 mt-1">
+                    {stat.description}
+                  </p>
+                </CardContent>
+              </Card>
+            );
+          })
+        )}
       </div>
 
-      {/* Quick Actions & Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
         {/* Quick Actions */}
         <Card>
           <CardHeader>
@@ -171,9 +150,9 @@ value: isLoadingAnalytics ? '...' : formatNumber(todayVisitors),
             >
               <Users className="w-5 h-5 mr-3" />
               <div className="text-left">
-                <div className="font-medium">Adaugă Membru Echipă</div>
-                <div className="text-sm text-gray-600">
-                  Înregistrează un nou agent imobiliar
+                <div className="font-medium">Gestionează Echipa</div>
+                <div className="text-sm opacity-90">
+                  Adaugă sau modifică membri
                 </div>
               </div>
             </Button>
@@ -185,30 +164,26 @@ value: isLoadingAnalytics ? '...' : formatNumber(todayVisitors),
             >
               <BarChart3 className="w-5 h-5 mr-3" />
               <div className="text-left">
-                <div className="font-medium">Vizualizează Analytics</div>
-                <div className="text-sm text-gray-600">
-                  Accesează statistici și loguri detaliate
+                <div className="font-medium">Vezi Analize</div>
+                <div className="text-sm opacity-90">
+                  Explorează datele de trafic
                 </div>
               </div>
             </Button>
-          </CardContent>
-        </Card>
 
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Activitate Recentă</CardTitle>
-            <CardDescription>Ultimele evenimente din sistem</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {recentActivities.map((activity, index) => (
-                <div key={index} className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-red-600 rounded-full mt-2 flex-shrink-0"></div>
-                  <p className="text-sm text-gray-700">{activity}</p>
+            <Button
+              onClick={() => navigate("/admin/settings")}
+              variant="outline"
+              className="w-full justify-start h-auto p-4"
+            >
+              <Settings className="w-5 h-5 mr-3" />
+              <div className="text-left">
+                <div className="font-medium">Setări Generale</div>
+                <div className="text-sm opacity-90">
+                  Configurează setările site-ului
                 </div>
-              ))}
-            </div>
+              </div>
+            </Button>
           </CardContent>
         </Card>
       </div>
