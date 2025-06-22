@@ -154,7 +154,7 @@ const Properties = () => {
     return (
       <>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
-          {Array.isArray(displayProperties) &&
+          {Array.isArray(displayProperties) ? (
             displayProperties.map((property: Property, index: number) => (
               <PropertyCard
                 key={property.id}
@@ -162,7 +162,18 @@ const Properties = () => {
                 index={index}
                 onClick={() => handlePropertyClick(property.id)}
               />
-            ))}
+            ))
+          ) : (
+            <div className="text-center py-16 col-span-full">
+              <p className="text-red-500">
+                Eroare la încărcarea proprietăților. Datele nu sunt în formatul
+                așteptat.
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                displayProperties type: {typeof displayProperties}
+              </p>
+            </div>
+          )}
         </div>
 
         {totalPages > 1 && (
