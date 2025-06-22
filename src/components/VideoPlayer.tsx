@@ -6,6 +6,8 @@ interface VideoPlayerProps {
   thumbnailUrl?: string;
   className?: string;
   aspectRatio?: "mobile" | "standard";
+  autoplay?: boolean;
+  onClick?: () => void;
 }
 
 const VideoPlayer = ({
