@@ -82,12 +82,34 @@ router.get("/", async (req, res) => {
 // GET /api/properties/:id
 router.get("/:id", async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT * FROM properties WHERE id = ?", [
-      req.params.id,
-    ]);
-    if (rows.length > 0) {
-      const property = rows[0];
-      property.badges = JSON.parse(property.badges || "[]");
+    if (useDatabase && db) {
+      try {
+        const [rows] = await db.query("SELECT * FROM properties WHERE id = ?", [
+          req.params.id,
+        ]);
+        if (rows.length > 0) {
+          const property = rows[0];
+          property.badges = JSON.parse(property.badges || "[]");
+          res.json({ success: true, data: property });
+          return;
+        } else {
+          res
+            .status(404)
+            .json({ success: false, message: "Property not found" });
+          return;
+        }
+      } catch (dbError) {
+        console.warn(
+          "Database query failed, falling back to mock data:",
+          dbError.message,
+        );
+        useDatabase = false;
+      }
+    }
+
+    // Use mock data
+    const property = mockData.properties.find((p) => p.id === req.params.id);
+    if (property) {
       res.json({ success: true, data: property });
     } else {
       res.status(404).json({ success: false, message: "Property not found" });
