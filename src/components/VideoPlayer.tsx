@@ -15,6 +15,8 @@ const VideoPlayer = ({
   thumbnailUrl,
   className = "",
   aspectRatio = "mobile",
+  autoplay = false,
+  onClick,
 }: VideoPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
