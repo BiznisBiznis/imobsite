@@ -21,23 +21,52 @@ router.get("/", async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
 
-    const [countResult] = await db.query(
-      "SELECT COUNT(*) as total FROM properties",
-    );
-    const total = countResult[0].total;
+    if (useDatabase && db) {
+      try {
+        const [countResult] = await db.query(
+          "SELECT COUNT(*) as total FROM properties",
+        );
+        const total = countResult[0].total;
 
-    const [results] = await db.query(
-      "SELECT * FROM properties ORDER BY createdAt DESC LIMIT ? OFFSET ?",
-      [limit, offset],
-    );
+        const [results] = await db.query(
+          "SELECT * FROM properties ORDER BY createdAt DESC LIMIT ? OFFSET ?",
+          [limit, offset],
+        );
+
+        res.json({
+          success: true,
+          data: {
+            data: results.map((p) => ({
+              ...p,
+              badges: JSON.parse(p.badges || "[]"),
+            })),
+            total: total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+          },
+        });
+        return;
+      } catch (dbError) {
+        console.warn(
+          "Database query failed, falling back to mock data:",
+          dbError.message,
+        );
+        useDatabase = false;
+      }
+    }
+
+    // Use mock data
+    const allProperties = mockData.properties;
+    const total = allProperties.length;
+    const startIndex = offset;
+    const endIndex = startIndex + limit;
+    const paginatedProperties = allProperties.slice(startIndex, endIndex);
 
     res.json({
       success: true,
       data: {
-        data: results.map((p) => ({
-          ...p,
-          badges: JSON.parse(p.badges || "[]"),
-        })),
+        data: paginatedProperties,
         total: total,
         page,
         limit,
