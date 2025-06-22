@@ -71,7 +71,7 @@ const PropertyCard = ({
 
         {/* Title/Description - Better font and spacing */}
         <h3
-          className="text-sm text-gray-700 overflow-hidden flex-shrink-0 leading-relaxed mb-3 font-primary"
+          className="text-sm text-slate-700 overflow-hidden flex-shrink-0 leading-relaxed mb-2 tracking-wide"
           style={{
             display: "-webkit-box",
             WebkitLineClamp: 2,
@@ -86,7 +86,7 @@ const PropertyCard = ({
         {/* Premium Details Button - Expensive Design */}
         <div className="flex justify-center">
           <button
-            className="inline-flex items-center justify-center px-4 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 font-primary tracking-wide uppercase border border-red-500/20 min-w-[100px]"
+            className="inline-flex items-center justify-center px-4 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 tracking-wide uppercase border border-red-500/20 min-w-[100px]"
             onClick={(e) => {
               e.stopPropagation();
               onClick?.();
